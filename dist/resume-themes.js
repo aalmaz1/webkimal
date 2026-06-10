@@ -1,8 +1,7 @@
 /**
  * Resume Theme Styles
  *
- * CSS custom properties (variables) for theme switching between
- * Classic and Modern resume styles.
+ * Strict theme switcher for the resume builder with CSS variables in body scope.
  */
 export const RESUME_THEMES_CSS = `
 /* ============================================================================
@@ -464,6 +463,38 @@ export function getComputedVariable(variableName, container) {
     return styles.getPropertyValue(`--resume-${variableName}`).trim() || undefined;
 }
 /**
+ * Get the stored theme from localStorage
+ * @returns The stored theme name, or null if none is stored
+ */
+function getStoredTheme() {
+    try {
+        if (typeof localStorage === 'undefined')
+            return null;
+        const stored = localStorage.getItem('resume-theme');
+        if (stored && ['classic', 'modern', 'minimalist'].includes(stored)) {
+            return stored;
+        }
+    }
+    catch {
+        // Safari private browsing or restricted storage
+    }
+    return null;
+}
+/**
+ * Store a theme name in localStorage
+ * @param theme - The theme name to store
+ */
+function setStoredTheme(theme) {
+    try {
+        if (typeof localStorage === 'undefined')
+            return;
+        localStorage.setItem('resume-theme', theme);
+    }
+    catch {
+        // Safari private browsing or restricted storage — silently ignore
+    }
+}
+/**
  * Theme Switcher Class
  * Provides a complete API for managing resume themes with callbacks
  */
@@ -485,7 +516,7 @@ export class ThemeSwitcher {
             this.stylesInjected = true;
         }
         const storedTheme = getStoredTheme();
-        const themeToApply = storedTheme ? storedTheme : initialTheme;
+        const themeToApply = storedTheme ?? initialTheme;
         this.currentTheme = themeToApply;
         applyTheme(themeToApply, this.container || undefined);
         setStoredTheme(themeToApply);
@@ -524,6 +555,13 @@ export class ThemeSwitcher {
         const currentIndex = themes.indexOf(this.currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
         this.switchTheme(themes[nextIndex]);
+    }
+    /**
+     * Toggle to the next theme in the cycle
+     * Cycles through classic → modern → minimalist → classic
+     */
+    toggleTheme() {
+        this.cycleTheme();
     }
     /**
      * Get the current theme

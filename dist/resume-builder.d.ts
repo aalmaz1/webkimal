@@ -1,128 +1,48 @@
 /**
  * Resume Builder for Pretext Engine
  *
- * This module provides a function to render resume data using the Pretext layout engine.
- * It maps structured resume JSON data into Pretext layout elements.
- *
- * Supports theme switching via CSS variables and theme configurations.
+ * Provides functions to render structured resume data into DOM elements
+ * using the Pretext layout engine for precise text measurement.
  */
-import { type LayoutLine } from '@chenglou/pretext';
-import { type ResumeThemeName, type ResumeThemeConfig } from './resume-themes';
-export type ContactInfo = {
-    email?: string;
-    phone?: string;
-    location?: string;
-    website?: string;
-    linkedin?: string;
-    github?: string;
-};
-export type EducationEntry = {
-    institution: string;
-    degree: string;
-    location?: string;
-    startDate?: string;
-    endDate?: string;
-    gpa?: string;
-    highlights?: string[];
-};
-export type ExperienceEntry = {
-    company: string;
-    position: string;
-    location?: string;
-    startDate?: string;
-    endDate?: string;
-    current?: boolean;
-    highlights?: string[];
-};
-export type ResumeData = {
-    name: string;
-    contact: ContactInfo;
-    education: EducationEntry[];
-    experience: ExperienceEntry[];
-    skills?: string[];
-    summary?: string;
-};
-export type ResumeLayoutConfig = {
-    pageWidth: number;
-    pageHeight: number;
-    marginLeft: number;
-    marginRight: number;
-    marginTop: number;
-    marginBottom: number;
-    nameFont: string;
-    sectionTitleFont: string;
-    bodyFont: string;
-    subsectionFont: string;
-    lineHeight: number;
-    sectionSpacing: number;
-    entrySpacing: number;
-    highlightIndent: number;
-    theme?: ResumeThemeName;
-    themeConfig?: ResumeThemeConfig;
-};
-export declare const DEFAULT_LAYOUT_CONFIG: ResumeLayoutConfig;
+import type { ResumeData } from './types.js';
+import { type LayoutLine as PretextLayoutLine } from '@chenglou/pretext';
+export type { ResumeData };
 /**
- * Build layout config from a theme configuration
- * @param themeConfig - The theme configuration to use
- * @param baseConfig - Optional base config to override (defaults to DEFAULT_LAYOUT_CONFIG)
- * @returns A new layout config with theme-based fonts and spacing
+ * A positioned block representing a laid-out text element on the page.
+ * Used for precise text measurement and positioning.
  */
-export declare function buildThemeLayoutConfig(themeConfig: ResumeThemeConfig, baseConfig?: ResumeLayoutConfig): ResumeLayoutConfig;
-type LayoutElement = {
-    type: 'name';
-    text: string;
-} | {
-    type: 'contact';
-    items: string[];
-} | {
-    type: 'sectionTitle';
-    text: string;
-} | {
-    type: 'entry';
-    heading: string;
-    subheading?: string;
-    meta?: string;
-    highlights?: string[];
-} | {
-    type: 'spacer';
-    height: number;
-};
-type PositionedBlock = {
+export type PositionedBlock = {
     x: number;
     y: number;
     width: number;
-    lines: LayoutLine[];
-    type: LayoutElement['type'];
+    lines: PretextLayoutLine[];
+    type: 'name' | 'title' | 'contact' | 'section' | 'entry' | 'summary' | 'skill';
 };
 /**
- * Renders resume data into positioned layout blocks using the Pretext engine.
+ * An augmented layout line with styling information for rendering.
+ */
+export type LayoutLine = {
+    text: string;
+    width: number;
+    fontFamily: string;
+    fontSize: number;
+    fontWeight: number | string;
+    color: string;
+};
+/**
+ * Create a PositionedBlock with the given parameters.
+ */
+export declare function createPositionedBlock(type: PositionedBlock['type'], x: number, y: number, width: number, lines: PretextLayoutLine[]): PositionedBlock;
+/**
+ * Create a LayoutLine with styling information.
+ */
+export declare function createLayoutLine(text: string, width: number, fontFamily: string, fontSize: number, fontWeight: number | string, color: string): LayoutLine;
+/**
+ * Render resume data into a container element using CSS custom properties
+ * for all styling values.
  *
- * @param data - The resume data object containing name, contact, education, and experience
- * @param config - Optional layout configuration (defaults to DEFAULT_LAYOUT_CONFIG)
- *               Can include a theme name or theme config for styled rendering
- * @returns An array of positioned blocks with line information for rendering
+ * @param data   - The resume data to render
+ * @param container - The DOM element to render into
  */
-export declare function renderResume(data: ResumeData, config?: ResumeLayoutConfig): PositionedBlock[];
-/**
- * Callback type for streaming resume rendering
- */
-export type BlockCallback = (block: PositionedBlock) => void;
-/**
- * Renders resume data with a streaming callback API.
- * Useful for progressively rendering large resumes or integrating with virtual scrolling.
- *
- * @param data - The resume data object
- * @param callback - Called for each positioned block
- * @param config - Optional layout configuration
- */
-export declare function renderResumeStreaming(data: ResumeData, callback: BlockCallback, config?: ResumeLayoutConfig): void;
-/**
- * Calculates the total height required for the resume
- */
-export declare function calculateResumeHeight(data: ResumeData, config?: ResumeLayoutConfig): number;
-/**
- * Validates resume data structure
- */
-export declare function validateResumeData(data: unknown): data is ResumeData;
-export {};
+export declare function renderResume(data: ResumeData, container: HTMLElement): void;
 //# sourceMappingURL=resume-builder.d.ts.map

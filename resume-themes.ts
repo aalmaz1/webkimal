@@ -535,10 +535,14 @@ export function getComputedVariable(
  * @returns The stored theme name, or null if none is stored
  */
 function getStoredTheme(): ResumeThemeName | null {
-  if (typeof localStorage === 'undefined') return null;
-  const stored = localStorage.getItem('resume-theme');
-  if (stored && ['classic', 'modern', 'minimalist'].includes(stored)) {
-    return stored as ResumeThemeName;
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const stored = localStorage.getItem('resume-theme');
+    if (stored && ['classic', 'modern', 'minimalist'].includes(stored)) {
+      return stored as ResumeThemeName;
+    }
+  } catch {
+    // Safari private browsing or restricted storage
   }
   return null;
 }
@@ -548,8 +552,12 @@ function getStoredTheme(): ResumeThemeName | null {
  * @param theme - The theme name to store
  */
 function setStoredTheme(theme: ResumeThemeName): void {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.setItem('resume-theme', theme);
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem('resume-theme', theme);
+  } catch {
+    // Safari private browsing or restricted storage — silently ignore
+  }
 }
 
 /**

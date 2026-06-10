@@ -1,53 +1,23 @@
 /**
  * Resume Builder for Pretext Engine
  *
- * This module provides a function to render resume data using the Pretext layout engine.
- * It maps structured resume JSON data into Pretext layout elements.
- *
- * Supports theme switching via CSS variables and theme configurations.
+ * Provides functions to render structured resume data into DOM elements
+ * using the Pretext layout engine for precise text measurement.
  */
-import { prepareWithSegments, layoutWithLines, } from '@chenglou/pretext';
-import { THEME_CONFIGS, } from './resume-themes.js';
-export const DEFAULT_LAYOUT_CONFIG = {
-    pageWidth: 816, // Letter size at 96 DPI (8.5 inches)
-    pageHeight: 1056, // Letter size at 96 DPI (11 inches)
-    marginLeft: 48,
-    marginRight: 48,
-    marginTop: 48,
-    marginBottom: 48,
-    nameFont: 'bold 24px "Helvetica Neue", Helvetica, Arial, sans-serif',
-    sectionTitleFont: 'bold 14px "Helvetica Neue", Helvetica, Arial, sans-serif',
-    bodyFont: '400 11px "Helvetica Neue", Helvetica, Arial, sans-serif',
-    subsectionFont: 'bold 11px "Helvetica Neue", Helvetica, Arial, sans-serif',
-    lineHeight: 16,
-    sectionSpacing: 20,
-    entrySpacing: 12,
-    highlightIndent: 16,
-    theme: 'classic',
-};
+import { prepareWithSegments, layoutWithLines } from '@chenglou/pretext';
 /**
- * Build layout config from a theme configuration
- * @param themeConfig - The theme configuration to use
- * @param baseConfig - Optional base config to override (defaults to DEFAULT_LAYOUT_CONFIG)
- * @returns A new layout config with theme-based fonts and spacing
+ * Create a PositionedBlock with the given parameters.
  */
-export function buildThemeLayoutConfig(themeConfig, baseConfig = DEFAULT_LAYOUT_CONFIG) {
-    return {
-        ...baseConfig,
-        theme: themeConfig.name,
-        themeConfig,
-        nameFont: `bold ${themeConfig.nameFontSize} ${themeConfig.nameFont}`,
-        sectionTitleFont: `bold ${themeConfig.sectionTitleFontSize} ${themeConfig.sectionTitleFont}`,
-        bodyFont: `${themeConfig.bodyFontWeight} ${themeConfig.bodyFontSize} ${themeConfig.bodyFont}`,
-        subsectionFont: `bold ${themeConfig.subsectionFontSize} ${themeConfig.subsectionFont}`,
-        sectionSpacing: themeConfig.sectionSpacing,
-        entrySpacing: themeConfig.entrySpacing,
-        highlightIndent: themeConfig.highlightIndent,
-    };
+export function createPositionedBlock(type, x, y, width, lines) {
+    return { type, x, y, width, lines };
 }
-// ============================================================================
-// Helper Functions
-// ============================================================================
+/**
+ * Create a LayoutLine with styling information.
+ */
+export function createLayoutLine(text, width, fontFamily, fontSize, fontWeight, color) {
+    return { text, width, fontFamily, fontSize, fontWeight, color };
+}
+// ── Internal helpers ──────────────────────────────────────────────────────────
 function prepareText(text, font) {
     return prepareWithSegments(text, font);
 }
@@ -55,434 +25,206 @@ function measureTextHeight(prepared, maxWidth, lineHeight) {
     const result = layoutWithLines(prepared, maxWidth, lineHeight);
     return result.height;
 }
-function formatContactItem(key, value) {
-    const labels = {
-        email: '',
-        phone: '',
-        location: '',
-        website: '',
-        linkedin: '',
-        github: '',
-    };
-    // For URLs, strip protocol for cleaner display
-    let displayValue = value;
-    if (key === 'website' || key === 'linkedin' || key === 'github') {
-        displayValue = value.replace(/^https?:\/\//, '').replace(/^www\./, '');
-        if (key === 'linkedin') {
-            displayValue = displayValue.replace(/^linkedin\.com\/in\//, '');
-        }
-        else if (key === 'github') {
-            displayValue = displayValue.replace(/^github\.com\//, '');
-        }
-    }
-    return displayValue;
+function formatContactItem(value) {
+    return value.replace(/^https?:\/\//, '').replace(/^www\./, '');
 }
-function buildContactLine(contact) {
+function buildContactLine(personal) {
     const items = [];
-    if (contact.email)
-        items.push(formatContactItem('email', contact.email));
-    if (contact.phone)
-        items.push(formatContactItem('phone', contact.phone));
-    if (contact.location)
-        items.push(formatContactItem('location', contact.location));
-    const separator = ' | ';
-    return items.join(separator);
+    if (personal.email)
+        items.push(personal.email);
+    if (personal.phone)
+        items.push(personal.phone);
+    if (personal.location)
+        items.push(personal.location);
+    if (personal.linkedin)
+        items.push(formatContactItem(personal.linkedin));
+    if (personal.github)
+        items.push(formatContactItem(personal.github));
+    return items.join(' • ');
 }
-function buildExperienceHeading(entry) {
-    let heading = entry.position;
-    if (entry.company) {
-        heading += ` at ${entry.company}`;
+function createBlock(tagName, className, textContent) {
+    const element = document.createElement(tagName);
+    element.className = className;
+    if (textContent) {
+        element.textContent = textContent;
     }
-    return heading;
+    return element;
 }
-function buildExperienceMeta(entry) {
-    const parts = [];
-    if (entry.location) {
-        parts.push(entry.location);
-    }
-    let dateRange = '';
-    if (entry.startDate) {
-        dateRange = entry.startDate;
-        if (entry.current) {
-            dateRange += ' – Present';
-        }
-        else if (entry.endDate) {
-            dateRange += ` – ${entry.endDate}`;
-        }
-    }
-    if (dateRange) {
-        parts.push(dateRange);
-    }
-    return parts.join(' • ');
+function createParagraph(text, font, maxWidth, lineHeight, className) {
+    const prepared = prepareText(text, font);
+    const estimatedHeight = measureTextHeight(prepared, maxWidth, lineHeight);
+    const paragraph = createBlock('div', className, text);
+    paragraph.style.whiteSpace = 'pre-wrap';
+    paragraph.style.lineHeight = `${lineHeight}px`;
+    paragraph.style.minHeight = `${Math.max(estimatedHeight, lineHeight)}px`;
+    return paragraph;
 }
-function buildEducationHeading(entry) {
-    let heading = entry.degree;
-    if (entry.institution) {
-        heading += ` — ${entry.institution}`;
-    }
-    return heading;
+function createSection(title) {
+    const section = createBlock('section', 'resume-section');
+    const heading = createBlock('div', 'resume-section-title', title);
+    section.appendChild(heading);
+    return section;
 }
-function buildEducationMeta(entry) {
-    const parts = [];
-    if (entry.location) {
-        parts.push(entry.location);
+function createEntry(title, subtitle, meta, highlights, entrySpacing) {
+    const entry = createBlock('div', 'resume-entry');
+    entry.appendChild(createBlock('div', 'entry-title', title));
+    if (subtitle) {
+        entry.appendChild(createBlock('div', 'entry-subtitle', subtitle));
     }
-    let dateRange = '';
-    if (entry.startDate) {
-        dateRange = entry.startDate;
-        if (entry.endDate) {
-            dateRange += ` – ${entry.endDate}`;
-        }
+    if (meta) {
+        entry.appendChild(createBlock('div', 'entry-meta', meta));
     }
-    if (dateRange) {
-        parts.push(dateRange);
-    }
-    if (entry.gpa) {
-        parts.push(`GPA: ${entry.gpa}`);
-    }
-    return parts.join(' • ');
-}
-// ============================================================================
-// Main Render Function
-// ============================================================================
-/**
- * Renders resume data into positioned layout blocks using the Pretext engine.
- *
- * @param data - The resume data object containing name, contact, education, and experience
- * @param config - Optional layout configuration (defaults to DEFAULT_LAYOUT_CONFIG)
- *               Can include a theme name or theme config for styled rendering
- * @returns An array of positioned blocks with line information for rendering
- */
-export function renderResume(data, config = DEFAULT_LAYOUT_CONFIG) {
-    // Apply theme configuration if specified
-    const effectiveConfig = config.themeConfig
-        ? buildThemeLayoutConfig(config.themeConfig, config)
-        : config.theme
-            ? buildThemeLayoutConfig(THEME_CONFIGS[config.theme], config)
-            : config;
-    const contentWidth = effectiveConfig.pageWidth - effectiveConfig.marginLeft - effectiveConfig.marginRight;
-    const blocks = [];
-    let currentY = effectiveConfig.marginTop;
-    // Helper to add a block
-    function addBlock(element, font) {
-        let text = '';
-        switch (element.type) {
-            case 'name':
-                text = element.text;
-                break;
-            case 'contact':
-                text = element.items.join(' | ');
-                break;
-            case 'sectionTitle':
-                text = element.text.toUpperCase();
-                break;
-            case 'entry':
-                text = element.heading;
-                if (element.subheading) {
-                    text = `${element.heading} — ${element.subheading}`;
-                }
-                break;
-            case 'spacer':
-                // Spacers don't need text preparation
-                currentY += element.height;
+    if (highlights?.length) {
+        const list = document.createElement('ul');
+        list.className = 'entry-highlights';
+        highlights.forEach((highlight) => {
+            if (!highlight)
                 return;
-        }
-        const prepared = prepareText(text, font);
-        const linesResult = layoutWithLines(prepared, contentWidth, effectiveConfig.lineHeight);
-        blocks.push({
-            x: effectiveConfig.marginLeft,
-            y: currentY,
-            width: contentWidth,
-            lines: linesResult.lines,
-            type: element.type,
+            const item = document.createElement('li');
+            item.textContent = highlight;
+            list.appendChild(item);
         });
-        currentY += linesResult.height;
+        entry.appendChild(list);
     }
-    // Helper to add highlights (bullet points)
-    function addHighlights(highlights) {
-        for (const highlight of highlights) {
-            const text = `• ${highlight}`;
-            const prepared = prepareText(text, effectiveConfig.bodyFont);
-            const linesResult = layoutWithLines(prepared, contentWidth - effectiveConfig.highlightIndent, effectiveConfig.lineHeight);
-            // Indent highlights
-            const indentedLines = linesResult.lines.map(line => ({
-                ...line,
-                start: line.start,
-                end: line.end,
-            }));
-            blocks.push({
-                x: effectiveConfig.marginLeft + effectiveConfig.highlightIndent,
-                y: currentY,
-                width: contentWidth - effectiveConfig.highlightIndent,
-                lines: indentedLines,
-                type: 'entry',
-            });
-            currentY += linesResult.height;
-        }
-    }
-    // 1. Name
-    addBlock({ type: 'name', text: data.name }, effectiveConfig.nameFont);
-    currentY += 4; // Extra spacing after name
-    // 2. Contact Info
-    const contactItems = [];
-    if (data.contact.email)
-        contactItems.push(formatContactItem('email', data.contact.email));
-    if (data.contact.phone)
-        contactItems.push(formatContactItem('phone', data.contact.phone));
-    if (data.contact.location)
-        contactItems.push(formatContactItem('location', data.contact.location));
-    const secondaryContactItems = [];
-    if (data.contact.website)
-        secondaryContactItems.push(formatContactItem('website', data.contact.website));
-    if (data.contact.linkedin)
-        secondaryContactItems.push(formatContactItem('linkedin', data.contact.linkedin));
-    if (data.contact.github)
-        secondaryContactItems.push(formatContactItem('github', data.contact.github));
-    if (contactItems.length > 0) {
-        addBlock({ type: 'contact', items: contactItems }, effectiveConfig.bodyFont);
-    }
-    if (secondaryContactItems.length > 0) {
-        addBlock({ type: 'contact', items: secondaryContactItems }, effectiveConfig.bodyFont);
-    }
-    currentY += effectiveConfig.sectionSpacing;
-    // 3. Summary (optional)
-    if (data.summary) {
-        addBlock({ type: 'entry', heading: data.summary }, effectiveConfig.bodyFont);
-        currentY += effectiveConfig.sectionSpacing;
-    }
-    // 4. Experience
-    if (data.experience && data.experience.length > 0) {
-        addBlock({ type: 'sectionTitle', text: 'Experience' }, effectiveConfig.sectionTitleFont);
-        currentY += effectiveConfig.entrySpacing;
-        for (const exp of data.experience) {
-            const heading = exp.position;
-            const subheading = exp.company;
-            const meta = buildExperienceMeta(exp);
-            // Create combined heading line
-            let headingText = heading;
-            if (subheading) {
-                headingText = `${heading} — ${subheading}`;
-            }
-            addBlock({ type: 'entry', heading: headingText, meta }, effectiveConfig.subsectionFont);
-            if (exp.highlights && exp.highlights.length > 0) {
-                addHighlights(exp.highlights);
-            }
-            currentY += effectiveConfig.entrySpacing;
-        }
-        currentY += effectiveConfig.sectionSpacing - effectiveConfig.entrySpacing;
-    }
-    // 5. Education
-    if (data.education && data.education.length > 0) {
-        addBlock({ type: 'sectionTitle', text: 'Education' }, effectiveConfig.sectionTitleFont);
-        currentY += effectiveConfig.entrySpacing;
-        for (const edu of data.education) {
-            const heading = edu.degree;
-            const subheading = edu.institution;
-            const meta = buildEducationMeta(edu);
-            let headingText = heading;
-            if (subheading) {
-                headingText = `${heading} — ${subheading}`;
-            }
-            addBlock({ type: 'entry', heading: headingText, meta }, effectiveConfig.subsectionFont);
-            if (edu.highlights && edu.highlights.length > 0) {
-                addHighlights(edu.highlights);
-            }
-            currentY += effectiveConfig.entrySpacing;
-        }
-        currentY += effectiveConfig.sectionSpacing - effectiveConfig.entrySpacing;
-    }
-    // 6. Skills (optional)
-    if (data.skills && data.skills.length > 0) {
-        addBlock({ type: 'sectionTitle', text: 'Skills' }, effectiveConfig.sectionTitleFont);
-        currentY += effectiveConfig.entrySpacing;
-        const skillsText = data.skills.join(' • ');
-        addBlock({ type: 'entry', heading: skillsText }, effectiveConfig.bodyFont);
-    }
-    return blocks;
+    entry.style.marginBottom = `${entrySpacing}px`;
+    return entry;
 }
-/**
- * Renders resume data with a streaming callback API.
- * Useful for progressively rendering large resumes or integrating with virtual scrolling.
- *
- * @param data - The resume data object
- * @param callback - Called for each positioned block
- * @param config - Optional layout configuration
- */
-export function renderResumeStreaming(data, callback, config = DEFAULT_LAYOUT_CONFIG) {
-    const contentWidth = config.pageWidth - config.marginLeft - config.marginRight;
-    let currentY = config.marginTop;
-    function emitBlock(element, font) {
-        let text = '';
-        switch (element.type) {
-            case 'name':
-                text = element.text;
-                break;
-            case 'contact':
-                text = element.items.join(' | ');
-                break;
-            case 'sectionTitle':
-                text = element.text.toUpperCase();
-                break;
-            case 'entry':
-                text = element.heading;
-                if (element.subheading) {
-                    text = `${element.heading} — ${element.subheading}`;
-                }
-                break;
-            case 'spacer':
-                currentY += element.height;
-                return;
-        }
-        const prepared = prepareText(text, font);
-        const linesResult = layoutWithLines(prepared, contentWidth, config.lineHeight);
-        callback({
-            x: config.marginLeft,
-            y: currentY,
-            width: contentWidth,
-            lines: linesResult.lines,
-            type: element.type,
+function createSkillSection(skills) {
+    const section = createSection('Skills');
+    const content = createBlock('div', 'skills-content');
+    if (!Array.isArray(skills) || !skills.length)
+        return section;
+    if (typeof skills[0] === 'string') {
+        content.appendChild(createBlock('div', 'skills-row', skills.join(' · ')));
+    }
+    else {
+        skills.forEach((category) => {
+            const group = createBlock('div', 'skill-category');
+            group.appendChild(createBlock('div', 'skill-category-title', category.category));
+            group.appendChild(createBlock('div', 'skill-category-list', category.skills.join(' · ')));
+            content.appendChild(group);
         });
-        currentY += linesResult.height;
     }
-    function emitHighlights(highlights) {
-        for (const highlight of highlights) {
-            const text = `• ${highlight}`;
-            const prepared = prepareText(text, config.bodyFont);
-            const linesResult = layoutWithLines(prepared, contentWidth - config.highlightIndent, config.lineHeight);
-            callback({
-                x: config.marginLeft + config.highlightIndent,
-                y: currentY,
-                width: contentWidth - config.highlightIndent,
-                lines: linesResult.lines,
-                type: 'entry',
-            });
-            currentY += linesResult.height;
+    section.appendChild(content);
+    return section;
+}
+// ── CSS variable helpers ──────────────────────────────────────────────────────
+function readCssVar(style, name, fallback) {
+    return style.getPropertyValue(`--resume-${name}`).trim() || fallback;
+}
+function readCssVarPx(style, name, fallback) {
+    const val = readCssVar(style, name, `${fallback}px`);
+    return parseInt(val, 10) || fallback;
+}
+function readCssVarNum(style, name, fallback) {
+    const val = readCssVar(style, name, `${fallback}`);
+    return parseFloat(val) || fallback;
+}
+function buildFontShorthand(style, prefix) {
+    const weight = readCssVar(style, `${prefix}-font-weight`, '400');
+    const size = readCssVar(style, `${prefix}-font-size`, '11px');
+    const family = readCssVar(style, `${prefix}-font`, '"Helvetica Neue", Helvetica, Arial, sans-serif');
+    return `${weight} ${size} ${family}`;
+}
+// ── Public API ────────────────────────────────────────────────────────────────
+/**
+ * Render resume data into a container element using CSS custom properties
+ * for all styling values.
+ *
+ * @param data   - The resume data to render
+ * @param container - The DOM element to render into
+ */
+export function renderResume(data, container) {
+    if (!data)
+        return;
+    if (!container)
+        throw new Error('renderResume: container is required');
+    container.innerHTML = '';
+    container.classList.add('resume-container');
+    const style = getComputedStyle(container);
+    const marginX = readCssVarPx(style, 'margin-x', 48);
+    const marginY = readCssVarPx(style, 'margin-y', 48);
+    const pageWidth = readCssVarPx(style, 'page-width', 816);
+    const lineHeight = readCssVarNum(style, 'body-line-height', 1.5) * readCssVarPx(style, 'body-font-size', 11);
+    const sectionSpacing = readCssVarPx(style, 'section-spacing', 24);
+    const entrySpacing = readCssVarPx(style, 'entry-spacing', 14);
+    const nameFont = buildFontShorthand(style, 'name');
+    const subsectionFont = buildFontShorthand(style, 'subsection');
+    const bodyFont = buildFontShorthand(style, 'body');
+    container.style.padding = `${marginY}px ${marginX}px ${marginY}px ${marginX}px`;
+    container.style.maxWidth = `${pageWidth}px`;
+    container.style.boxSizing = 'border-box';
+    const { personal, summary, experience, education, skills } = data;
+    // Header
+    const header = createBlock('header', 'resume-header');
+    const nameElement = createBlock('div', 'resume-name', personal?.name);
+    nameElement.style.font = nameFont;
+    header.appendChild(nameElement);
+    if (personal?.title) {
+        const titleElement = createBlock('div', 'resume-title', personal.title);
+        titleElement.style.font = subsectionFont;
+        header.appendChild(titleElement);
+    }
+    if (personal) {
+        const contactLine = buildContactLine(personal);
+        if (contactLine) {
+            const contactElement = createBlock('div', 'resume-contact', contactLine);
+            contactElement.style.font = bodyFont;
+            header.appendChild(contactElement);
         }
     }
-    // Name
-    emitBlock({ type: 'name', text: data.name }, config.nameFont);
-    currentY += 4;
-    // Contact
-    const contactItems = [];
-    if (data.contact.email)
-        contactItems.push(formatContactItem('email', data.contact.email));
-    if (data.contact.phone)
-        contactItems.push(formatContactItem('phone', data.contact.phone));
-    if (data.contact.location)
-        contactItems.push(formatContactItem('location', data.contact.location));
-    const secondaryContactItems = [];
-    if (data.contact.website)
-        secondaryContactItems.push(formatContactItem('website', data.contact.website));
-    if (data.contact.linkedin)
-        secondaryContactItems.push(formatContactItem('linkedin', data.contact.linkedin));
-    if (data.contact.github)
-        secondaryContactItems.push(formatContactItem('github', data.contact.github));
-    if (contactItems.length > 0) {
-        emitBlock({ type: 'contact', items: contactItems }, config.bodyFont);
-    }
-    if (secondaryContactItems.length > 0) {
-        emitBlock({ type: 'contact', items: secondaryContactItems }, config.bodyFont);
-    }
-    currentY += config.sectionSpacing;
+    container.appendChild(header);
     // Summary
-    if (data.summary) {
-        emitBlock({ type: 'entry', heading: data.summary }, config.bodyFont);
-        currentY += config.sectionSpacing;
+    if (summary) {
+        const summarySection = createSection('Professional Summary');
+        summarySection.appendChild(createParagraph(summary, bodyFont, pageWidth - marginX * 2, lineHeight, 'resume-summary'));
+        container.appendChild(summarySection);
     }
     // Experience
-    if (data.experience && data.experience.length > 0) {
-        emitBlock({ type: 'sectionTitle', text: 'Experience' }, config.sectionTitleFont);
-        currentY += config.entrySpacing;
-        for (const exp of data.experience) {
-            let headingText = exp.position;
-            if (exp.company) {
-                headingText = `${exp.position} — ${exp.company}`;
+    if (experience?.length) {
+        const experienceSection = createSection('Experience');
+        experience.forEach((item) => {
+            if (!item)
+                return;
+            const heading = `${item.role} · ${item.company}`;
+            const metaParts = [];
+            if (item.startDate) {
+                metaParts.push(item.startDate);
+                if (item.current) {
+                    metaParts.push('Present');
+                }
+                else if (item.endDate) {
+                    metaParts.push(item.endDate);
+                }
             }
-            const meta = buildExperienceMeta(exp);
-            emitBlock({ type: 'entry', heading: headingText, meta }, config.subsectionFont);
-            if (exp.highlights && exp.highlights.length > 0) {
-                emitHighlights(exp.highlights);
-            }
-            currentY += config.entrySpacing;
-        }
-        currentY += config.sectionSpacing - config.entrySpacing;
+            const meta = metaParts.length ? metaParts.join(' – ') : undefined;
+            experienceSection.appendChild(createEntry(heading, item.location, meta, item.highlights, entrySpacing));
+        });
+        container.appendChild(experienceSection);
     }
     // Education
-    if (data.education && data.education.length > 0) {
-        emitBlock({ type: 'sectionTitle', text: 'Education' }, config.sectionTitleFont);
-        currentY += config.entrySpacing;
-        for (const edu of data.education) {
-            let headingText = edu.degree;
-            if (edu.institution) {
-                headingText = `${edu.degree} — ${edu.institution}`;
+    if (education?.length) {
+        const educationSection = createSection('Education');
+        education.forEach((item) => {
+            if (!item)
+                return;
+            const heading = `${item.degree} · ${item.institution}`;
+            const metaParts = [];
+            if (item.startDate) {
+                metaParts.push(item.startDate);
+                if (item.endDate)
+                    metaParts.push(item.endDate);
             }
-            const meta = buildEducationMeta(edu);
-            emitBlock({ type: 'entry', heading: headingText, meta }, config.subsectionFont);
-            if (edu.highlights && edu.highlights.length > 0) {
-                emitHighlights(edu.highlights);
-            }
-            currentY += config.entrySpacing;
-        }
-        currentY += config.sectionSpacing - config.entrySpacing;
+            if (item.gpa)
+                metaParts.push(`GPA ${item.gpa}`);
+            const meta = metaParts.length ? metaParts.join(' • ') : undefined;
+            educationSection.appendChild(createEntry(heading, item.location, meta, item.highlights, entrySpacing));
+        });
+        container.appendChild(educationSection);
     }
     // Skills
-    if (data.skills && data.skills.length > 0) {
-        emitBlock({ type: 'sectionTitle', text: 'Skills' }, config.sectionTitleFont);
-        currentY += config.entrySpacing;
-        const skillsText = data.skills.join(' • ');
-        emitBlock({ type: 'entry', heading: skillsText }, config.bodyFont);
+    if (skills?.length) {
+        container.appendChild(createSkillSection(skills));
     }
-}
-// ============================================================================
-// Utility Functions
-// ============================================================================
-/**
- * Calculates the total height required for the resume
- */
-export function calculateResumeHeight(data, config = DEFAULT_LAYOUT_CONFIG) {
-    const blocks = renderResume(data, config);
-    if (blocks.length === 0)
-        return 0;
-    const lastBlock = blocks[blocks.length - 1];
-    const lastLine = lastBlock.lines[lastBlock.lines.length - 1];
-    if (!lastLine)
-        return 0;
-    return lastBlock.y + config.lineHeight;
-}
-/**
- * Validates resume data structure
- */
-export function validateResumeData(data) {
-    if (!data || typeof data !== 'object')
-        return false;
-    const obj = data;
-    if (typeof obj.name !== 'string' || !obj.name.trim())
-        return false;
-    if (typeof obj.contact !== 'object' || obj.contact === null)
-        return false;
-    if (!Array.isArray(obj.education))
-        return false;
-    if (!Array.isArray(obj.experience))
-        return false;
-    const contact = obj.contact;
-    for (const key of ['email', 'phone', 'location', 'website', 'linkedin', 'github']) {
-        if (key in contact && typeof contact[key] !== 'string')
-            return false;
-    }
-    for (const edu of obj.education) {
-        if (!edu || typeof edu !== 'object')
-            return false;
-        const e = edu;
-        if (typeof e.institution !== 'string' || typeof e.degree !== 'string')
-            return false;
-    }
-    for (const exp of obj.experience) {
-        if (!exp || typeof exp !== 'object')
-            return false;
-        const e = exp;
-        if (typeof e.company !== 'string' || typeof e.position !== 'string')
-            return false;
-    }
-    return true;
 }
 //# sourceMappingURL=resume-builder.js.map
