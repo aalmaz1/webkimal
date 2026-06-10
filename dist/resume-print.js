@@ -4,7 +4,7 @@
  * Provides CSS @media print styles and a TypeScript function to trigger
  * the browser's native print dialog with proper theme support.
  */
-import { injectThemeStyles, getCurrentTheme, applyTheme } from './resume-themes';
+import { injectThemeStyles, getCurrentTheme, applyTheme } from './resume-themes.js';
 // ============================================================================
 // Print CSS Styles
 // ============================================================================

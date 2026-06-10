@@ -9,9 +9,9 @@
 // Import types and functions from our modules
 // Note: In a real build environment, these would be compiled from separate .ts files
 // For this demo, we assume the modules are available or bundled.
-import { renderResume, buildThemeLayoutConfig } from './resume-builder';
-import { ThemeSwitcher } from './resume-themes';
-import { printResume } from './print-utils';
+import { renderResume, buildThemeLayoutConfig } from './resume-builder.js';
+import { ThemeSwitcher } from './resume-themes.js';
+import { printResume } from './print-utils.js';
 // Sample Resume Data (JSON)
 const sampleResumeData = {
     name: "Alex Johnson",

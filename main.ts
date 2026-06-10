@@ -11,9 +11,9 @@
 // Note: In a real build environment, these would be compiled from separate .ts files
 // For this demo, we assume the modules are available or bundled.
 
-import { renderResume, DEFAULT_LAYOUT_CONFIG, buildThemeLayoutConfig, type ResumeLayoutConfig } from './resume-builder';
-import { ThemeSwitcher, THEME_CONFIGS, type ResumeThemeName } from './resume-themes';
-import { printResume } from './print-utils';
+import { renderResume, DEFAULT_LAYOUT_CONFIG, buildThemeLayoutConfig, type ResumeLayoutConfig } from './resume-builder.js';
+import { ThemeSwitcher, THEME_CONFIGS, type ResumeThemeName } from './resume-themes.js';
+import { printResume } from './print-utils.js';
 
 // Sample Resume Data (JSON)
 const sampleResumeData = {

@@ -5,15 +5,15 @@
  * to dynamically switch between Professional, Creative, and Minimalist themes.
  */
 
-import { renderResume, buildThemeLayoutConfig, DEFAULT_LAYOUT_CONFIG } from './resume-builder'
+import { renderResume, buildThemeLayoutConfig, DEFAULT_LAYOUT_CONFIG } from './resume-builder.js'
 import { 
   createThemeSwitcher, 
   THEME_CONFIGS, 
   type ResumeThemeName,
   injectThemeStyles,
   applyTheme,
-} from './resume-themes'
-import type { ResumeData } from './resume-builder'
+} from './resume-themes.js'
+import type { ResumeData } from './resume-builder.js'
 
 // ============================================================================
 // Sample Resume Data

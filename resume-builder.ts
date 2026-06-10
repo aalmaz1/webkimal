@@ -21,7 +21,7 @@ import {
   type ResumeThemeName,
   type ResumeThemeConfig,
   THEME_CONFIGS,
-} from './resume-themes'
+} from './resume-themes.js'
 
 // ============================================================================
 // Resume Data Types

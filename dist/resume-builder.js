@@ -7,7 +7,7 @@
  * Supports theme switching via CSS variables and theme configurations.
  */
 import { prepareWithSegments, layoutWithLines, } from '@chenglou/pretext';
-import { THEME_CONFIGS, } from './resume-themes';
+import { THEME_CONFIGS, } from './resume-themes.js';
 export const DEFAULT_LAYOUT_CONFIG = {
     pageWidth: 816, // Letter size at 96 DPI (8.5 inches)
     pageHeight: 1056, // Letter size at 96 DPI (11 inches)

@@ -4,8 +4,8 @@
  * This example demonstrates how to use the ThemeSwitcher class
  * to dynamically switch between Professional, Creative, and Minimalist themes.
  */
-import { renderResume, buildThemeLayoutConfig, DEFAULT_LAYOUT_CONFIG } from './resume-builder';
-import { createThemeSwitcher, THEME_CONFIGS, } from './resume-themes';
+import { renderResume, buildThemeLayoutConfig, DEFAULT_LAYOUT_CONFIG } from './resume-builder.js';
+import { createThemeSwitcher, THEME_CONFIGS, } from './resume-themes.js';
 // ============================================================================
 // Sample Resume Data
 // ============================================================================
