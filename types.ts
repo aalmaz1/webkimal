@@ -5,6 +5,22 @@ export type SkillCategory = {
 
 export type Skills = string[] | SkillCategory[]
 
+/**
+ * TimeBoundedEntity represents an entity with a time period (start/end dates).
+ * Used for both education and experience entries as an alternative schema.
+ */
+export interface TimeBoundedEntity {
+  institution?: string      // For education
+  company?: string          // For experience
+  role?: string             // For experience
+  degree?: string           // For education
+  period: {
+    start: string
+    end?: string
+  }
+  description: string[]     // Array of bullet point strings
+}
+
 export interface PersonalDetails {
   name: string
   title: string
@@ -40,7 +56,7 @@ export interface EducationItem {
 export interface ResumeData {
   personal: PersonalDetails
   summary?: string
-  experience?: ExperienceItem[]
   education?: EducationItem[]
+  experience?: ExperienceItem[]
   skills?: Skills
 }

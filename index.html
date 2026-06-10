@@ -277,6 +277,22 @@
             color: #333; /* Default text color inside resume */
         }
 
+        /* Layout Primitives - PositionedBlock */
+        .positioned-block {
+            display: block;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Layout Primitives - LayoutLine */
+        .layout-line {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            width: 100%;
+        }
+
         /* Overflow visual line */
         .overflow-line {
             position: absolute;
@@ -521,7 +537,7 @@
                     <select id="theme-select" class="input-field">
                         <option value="classic">Classic Professional</option>
                         <option value="modern">Modern Bold</option>
-                        <option value="minimalist">Minimalist Clean</option>
+                        <option value="minimal">Minimalist Clean</option>
                     </select>
                 </div>
 
