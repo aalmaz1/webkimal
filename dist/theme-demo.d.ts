@@ -2,7 +2,7 @@
  * Theme Switcher Demo for Resume Builder
  *
  * This example demonstrates how to use the ThemeSwitcher class
- * to dynamically switch between Professional, Creative, and Minimalist themes.
+ * to dynamically switch between Classic, Modern, and Minimalist themes.
  */
 import { type ResumeThemeName } from './resume-themes';
 import type { ResumeData } from './resume-builder';
@@ -29,7 +29,7 @@ export declare class ResumeViewerWithTheme {
      */
     switchTheme(theme: ResumeThemeName): void;
     /**
-     * Toggle between Professional and Creative
+     * Toggle between Classic and Modern
      */
     toggleTheme(): void;
     /**

@@ -23,7 +23,7 @@ export const DEFAULT_LAYOUT_CONFIG = {
     sectionSpacing: 20,
     entrySpacing: 12,
     highlightIndent: 16,
-    theme: 'professional',
+    theme: 'classic',
 };
 /**
  * Build layout config from a theme configuration

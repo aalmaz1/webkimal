@@ -1,8 +1,7 @@
 /**
  * Resume Theme Styles
  * 
- * CSS custom properties (variables) for theme switching between
- * Professional and Creative resume styles.
+ * Strict theme switcher for the resume builder with CSS variables in body scope.
  */
 
 export const RESUME_THEMES_CSS = `
@@ -11,8 +10,8 @@ export const RESUME_THEMES_CSS = `
    ============================================================================ */
 
 :root {
-  /* Default to Professional theme */
-  --resume-theme-name: 'professional';
+  /* Default to Classic theme */
+  --resume-theme-name: 'classic';
   
   /* Color Palette */
   --resume-primary-color: #2c3e50;
@@ -74,12 +73,12 @@ export const RESUME_THEMES_CSS = `
 }
 
 /* ============================================================================
-   Professional Theme (Default)
+   Classic Theme (Default)
    ============================================================================ */
 
-[data-resume-theme="professional"],
-.resume-theme-professional {
-  --resume-theme-name: 'professional';
+[data-resume-theme="classic"],
+.resume-theme-classic {
+  --resume-theme-name: 'classic';
   
   /* Conservative, traditional colors */
   --resume-primary-color: #2c3e50;
@@ -132,12 +131,12 @@ export const RESUME_THEMES_CSS = `
 }
 
 /* ============================================================================
-   Creative Theme
+   Modern Theme
    ============================================================================ */
 
-[data-resume-theme="creative"],
-.resume-theme-creative {
-  --resume-theme-name: 'creative';
+[data-resume-theme="modern"],
+.resume-theme-modern {
+  --resume-theme-name: 'modern';
   
   /* Bold, modern colors */
   --resume-primary-color: #1a1a2e;
@@ -276,7 +275,7 @@ export const RESUME_THEMES_CSS = `
 /**
  * Theme configuration types
  */
-export type ResumeThemeName = 'professional' | 'creative' | 'minimalist';
+export type ResumeThemeName = 'classic' | 'modern' | 'minimalist';
 
 export type ResumeThemeConfig = {
   name: ResumeThemeName;
@@ -326,8 +325,8 @@ export type ResumeThemeConfig = {
  * Predefined theme configurations
  */
 export const THEME_CONFIGS: Record<ResumeThemeName, ResumeThemeConfig> = {
-  professional: {
-    name: 'professional',
+  classic: {
+    name: 'classic',
     primaryColor: '#2c3e50',
     secondaryColor: '#34495e',
     accentColor: '#3498db',
@@ -370,8 +369,8 @@ export const THEME_CONFIGS: Record<ResumeThemeName, ResumeThemeConfig> = {
     transitionDuration: 300,
   },
   
-  creative: {
-    name: 'creative',
+  modern: {
+    name: 'modern',
     primaryColor: '#1a1a2e',
     secondaryColor: '#16213e',
     accentColor: '#e94560',
@@ -488,7 +487,7 @@ export function applyTheme(
   const target = container || document.body;
   
   // Remove existing theme classes
-  target.classList.remove('resume-theme-professional', 'resume-theme-creative', 'resume-theme-minimalist');
+  target.classList.remove('resume-theme-classic', 'resume-theme-modern', 'resume-theme-minimalist');
   target.removeAttribute('data-resume-theme');
   
   // Apply new theme
@@ -502,16 +501,16 @@ export function applyTheme(
  * @returns The current theme name
  */
 export function getCurrentTheme(container?: HTMLElement): ResumeThemeName {
-  if (typeof document === 'undefined') return 'professional';
+  if (typeof document === 'undefined') return 'classic';
   
   const target = container || document.body;
   const themeAttr = target.getAttribute('data-resume-theme');
   
-  if (themeAttr && ['professional', 'creative', 'minimalist'].includes(themeAttr)) {
+  if (themeAttr && ['classic', 'modern', 'minimalist'].includes(themeAttr)) {
     return themeAttr as ResumeThemeName;
   }
   
-  return 'professional';
+  return 'classic';
 }
 
 /**
@@ -536,7 +535,7 @@ export function getComputedVariable(
  * Provides a complete API for managing resume themes with callbacks
  */
 export class ThemeSwitcher {
-  private currentTheme: ResumeThemeName = 'professional';
+  private currentTheme: ResumeThemeName = 'classic';
   private container: HTMLElement | null = null;
   private onThemeChangeCallbacks: ((theme: ResumeThemeName) => void)[] = [];
   private stylesInjected = false;
@@ -549,14 +548,17 @@ export class ThemeSwitcher {
    * Initialize the theme switcher
    * Injects CSS and applies initial theme
    */
-  initialize(initialTheme: ResumeThemeName = 'professional'): void {
+  initialize(initialTheme: ResumeThemeName = 'classic'): void {
     if (!this.stylesInjected) {
       injectThemeStyles();
       this.stylesInjected = true;
     }
     
-    this.currentTheme = initialTheme;
-    applyTheme(initialTheme, this.container || undefined);
+    const storedTheme = getStoredTheme();
+    const themeToApply = storedTheme ?? initialTheme;
+    this.currentTheme = themeToApply;
+    applyTheme(themeToApply, this.container || undefined);
+    setStoredTheme(themeToApply);
   }
   
   /**
@@ -569,6 +571,14 @@ export class ThemeSwitcher {
     
     this.currentTheme = themeName;
     applyTheme(themeName, this.container || undefined);
+    setStoredTheme(themeName);
+    
+    const dispatchTarget = this.container || (typeof document !== 'undefined' ? document.body : null);
+    if (dispatchTarget) {
+      dispatchTarget.dispatchEvent(
+        new CustomEvent('themeChanged', { bubbles: true, detail: { theme: themeName } }),
+      );
+    }
     
     if (triggerCallbacks) {
       this.onThemeChangeCallbacks.forEach(callback => callback(themeName));
@@ -576,10 +586,10 @@ export class ThemeSwitcher {
   }
   
   /**
-   * Toggle between Professional and Creative themes
+   * Toggle between Classic and Modern themes
    */
   togglePrimaryThemes(): void {
-    const newTheme = this.currentTheme === 'professional' ? 'creative' : 'professional';
+    const newTheme = this.currentTheme === 'classic' ? 'modern' : 'classic';
     this.switchTheme(newTheme);
   }
   
@@ -587,7 +597,7 @@ export class ThemeSwitcher {
    * Cycle through all available themes
    */
   cycleTheme(): void {
-    const themes: ResumeThemeName[] = ['professional', 'creative', 'minimalist'];
+    const themes: ResumeThemeName[] = ['classic', 'modern', 'minimalist'];
     const currentIndex = themes.indexOf(this.currentTheme);
     const nextIndex = (currentIndex + 1) % themes.length;
     this.switchTheme(themes[nextIndex]);
@@ -640,7 +650,7 @@ export class ThemeSwitcher {
  */
 export function createThemeSwitcher(
   container?: HTMLElement | null,
-  initialTheme: ResumeThemeName = 'professional',
+  initialTheme: ResumeThemeName = 'classic',
 ): ThemeSwitcher {
   const switcher = new ThemeSwitcher(container);
   switcher.initialize(initialTheme);

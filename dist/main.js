@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     // 1. Initialize Theme Switcher
-    const themeSwitcher = new ThemeSwitcher(container);
-    themeSwitcher.initialize('professional');
+    const themeSwitcher = new ThemeSwitcher(document.body);
+    themeSwitcher.initialize('classic');
     // 2. Render Initial Resume
     function renderCurrentResume() {
         const currentTheme = themeSwitcher.getTheme();
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderCurrentResume();
         });
     }
-    // Toggle theme button (cycles between Professional and Creative)
+    // Toggle theme button (cycles between Classic and Modern)
     const toggleBtn = document.getElementById('toggle-theme-btn');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', () => {
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ Application initialized successfully!");
     console.log("📋 Features active:");
     console.log("   - JSON Resume Builder (renderResume)");
-    console.log("   - Theme Switcher (Professional/Creative/Minimalist)");
+    console.log("   - Theme Switcher (Classic/Modern/Minimalist)");
     console.log("   - Print-to-PDF (@media print optimization)");
     // Cleanup on page unload (optional)
     window.addEventListener('beforeunload', () => {

@@ -56,7 +56,7 @@ This project implements three core functional modules that demonstrate advanced 
 - **Value**: Eliminates the need for rigid HTML templates. It dynamically constructs the document structure based on data volume, ensuring pixel-perfect typography and alignment regardless of content length.
 
 ### 2. Dynamic Theme Switcher System
-- **Functionality**: A real-time UI control that toggles CSS Custom Properties (variables) to switch between distinct visual styles: *Professional*, *Creative*, and *Minimalist*.
+- **Functionality**: A real-time UI control that toggles CSS Custom Properties (variables) to switch between distinct visual styles: *Classic*, *Modern*, and *Minimalist*.
 - **Value**: Empowers users to customize the resume's aesthetic to match specific industry standards (e.g., conservative for law, bold for design) without reloading the page or altering the underlying data.
 
 ### 3. Print-to-PDF Optimization (`printResume`)

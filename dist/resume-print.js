@@ -188,7 +188,7 @@ export function injectPrintStyles() {
  *
  * @example
  * // With specific theme
- * printResume({ theme: 'professional' })
+ * printResume({ theme: 'classic' })
  */
 export function printResume(options = {}) {
     const { onBeforePrint, onAfterPrint, injectStyles = true, theme, container, } = options;
@@ -215,7 +215,7 @@ export function printResume(options = {}) {
     // Store current theme to restore after printing
     const previousTheme = getCurrentTheme(containerElement || undefined);
     // Apply specified theme if provided
-    if (theme && ['professional', 'creative', 'minimalist'].includes(theme)) {
+    if (theme && ['classic', 'modern', 'minimalist'].includes(theme)) {
         applyTheme(theme, containerElement || undefined);
     }
     // Execute before print callback
@@ -307,7 +307,7 @@ export function createPrintReadyClone(container, theme) {
     clone.style.background = 'white';
     clone.style.boxShadow = 'none';
     // Apply theme if specified
-    if (theme && ['professional', 'creative', 'minimalist'].includes(theme)) {
+    if (theme && ['classic', 'modern', 'minimalist'].includes(theme)) {
         clone.classList.add(`resume-theme-${theme}`);
         clone.setAttribute('data-resume-theme', theme);
     }

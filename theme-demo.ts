@@ -2,7 +2,7 @@
  * Theme Switcher Demo for Resume Builder
  * 
  * This example demonstrates how to use the ThemeSwitcher class
- * to dynamically switch between Professional, Creative, and Minimalist themes.
+ * to dynamically switch between Classic, Modern, and Minimalist themes.
  */
 
 import { renderResume, buildThemeLayoutConfig, DEFAULT_LAYOUT_CONFIG } from './resume-builder.js'
@@ -89,7 +89,7 @@ const sampleResume: ResumeData = {
 export function demoBasicThemeSwitcher(): void {
   console.log('=== Basic Theme Switcher Demo ===\n')
   
-  // Create theme switcher (auto-initializes with Professional theme)
+  // Create theme switcher (auto-initializes with Classic theme)
   const switcher = createThemeSwitcher()
   
   // Subscribe to theme changes
@@ -104,13 +104,13 @@ export function demoBasicThemeSwitcher(): void {
   })
   console.log(`Rendered ${blocks.length} blocks with ${switcher.getTheme()} theme\n`)
   
-  // Toggle to Creative theme
-  switcher.switchTheme('creative')
+  // Toggle to Modern theme
+  switcher.switchTheme('modern')
   blocks = renderResume(sampleResume, {
     ...DEFAULT_LAYOUT_CONFIG,
-    theme: 'creative',
+    theme: 'modern',
   })
-  console.log(`Rendered ${blocks.length} blocks with creative theme\n`)
+  console.log(`Rendered ${blocks.length} blocks with modern theme\n`)
   
   // Cycle through all themes
   switcher.cycleTheme() // Now minimalist
@@ -127,13 +127,13 @@ export function demoBasicThemeSwitcher(): void {
 export function demoDirectThemeConfig(): void {
   console.log('=== Direct Theme Configuration Demo ===\n')
   
-  // Get Creative theme config
-  const creativeConfig = THEME_CONFIGS.creative
+  // Get Modern theme config
+  const creativeConfig = THEME_CONFIGS.modern
   
   // Build layout config from theme
   const layoutConfig = buildThemeLayoutConfig(creativeConfig)
   
-  console.log('Creative Theme Layout Config:')
+  console.log('Modern Theme Layout Config:')
   console.log(`  Name Font: ${layoutConfig.nameFont}`)
   console.log(`  Section Spacing: ${layoutConfig.sectionSpacing}px`)
   console.log(`  Entry Spacing: ${layoutConfig.entrySpacing}px`)
@@ -151,7 +151,7 @@ export function demoDirectThemeConfig(): void {
 export function demoDynamicThemeSwitching(): void {
   console.log('=== Dynamic Theme Switching Demo ===\n')
   
-  const themes: ResumeThemeName[] = ['professional', 'creative', 'minimalist']
+  const themes: ResumeThemeName[] = ['classic', 'modern', 'minimalist']
   
   for (const theme of themes) {
     console.log(`Rendering with ${theme.toUpperCase()} theme:`)
@@ -174,8 +174,8 @@ export function demoDynamicThemeSwitching(): void {
 export function demoCustomThemeOverride(): void {
   console.log('=== Custom Theme Override Demo ===\n')
   
-  // Start with professional theme
-  const baseConfig = THEME_CONFIGS.professional
+  // Start with classic theme
+  const baseConfig = THEME_CONFIGS.classic
   
   // Override specific properties
   const customConfig = {
@@ -246,7 +246,7 @@ export class ResumeViewerWithTheme {
   }
   
   /**
-   * Toggle between Professional and Creative
+   * Toggle between Classic and Modern
    */
   toggleTheme(): void {
     this.switcher.togglePrimaryThemes()

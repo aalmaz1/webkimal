@@ -49,7 +49,7 @@ export type PrintOptions = {
  *
  * @example
  * // With specific theme
- * printResume({ theme: 'professional' })
+ * printResume({ theme: 'classic' })
  */
 export declare function printResume(options?: PrintOptions): void;
 /**
