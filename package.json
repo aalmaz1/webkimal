@@ -3,6 +3,7 @@
     "@chenglou/pretext": "^0.0.7"
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
@@ -11,7 +12,9 @@
   "description": "A professional resume builder powered by the Pretext layout engine, featuring dynamic theme switching and print-to-PDF capabilities.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild main.ts --bundle --outfile=bundle.js --format=esm --platform=browser --target=es2020",
+    "typecheck": "tsc --noEmit",
+    "start": "python3 -m http.server 3000"
   },
   "keywords": [],
   "author": "",

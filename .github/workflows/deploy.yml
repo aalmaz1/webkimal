@@ -29,15 +29,8 @@ jobs:
       - name: Install dependencies        
         run: npm install      
         
-      - name: Build project        
-        run: npx tsc      
-      
-      - name: Fix paths for GH Pages (Optional)        
-        run: |          
-          cp dist/*.js .           
-          cp dist/*.css . 2>/dev/null || true         
-          sed -i 's|./dist/||g' index.html || true          
-          sed -i 's|"dist/||g' index.html || true      
+      - name: Build project (esbuild bundle)
+        run: npx esbuild main.ts --bundle --outfile=bundle.js --format=esm --platform=browser --target=es2020      
           
       - name: Upload artifact        
         uses: actions/upload-pages-artifact@v3        
