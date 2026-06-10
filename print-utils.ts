@@ -278,8 +278,8 @@ export function printResume(options: PrintOptions = {}): void {
   const previousTheme = getCurrentTheme(containerElement || undefined)
 
   // Apply specified theme if provided
-  if (theme && ['classic', 'modern', 'minimalist'].includes(theme)) {
-    applyTheme(theme as 'classic' | 'modern' | 'minimalist', containerElement || undefined)
+  if (theme && ['classic', 'modern', 'minimal'].includes(theme)) {
+    applyTheme(theme as 'classic' | 'modern' | 'minimal', containerElement || undefined)
   }
 
   // Execute before print callback
@@ -378,7 +378,7 @@ export function createPrintReadyClone(
   clone.style.background = 'white'
   clone.style.boxShadow = 'none'
 
-  if (theme && ['classic', 'modern', 'minimalist'].includes(theme)) {
+  if (theme && ['classic', 'modern', 'minimal'].includes(theme)) {
     clone.classList.add(`resume-theme-${theme}`)
     clone.setAttribute('data-resume-theme', theme)
   }

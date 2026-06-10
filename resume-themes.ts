@@ -192,9 +192,9 @@ export const RESUME_THEMES_CSS = `
    Minimalist Theme (Bonus)
    ============================================================================ */
 
-[data-resume-theme="minimalist"],
-.resume-theme-minimalist {
-  --resume-theme-name: 'minimalist';
+[data-resume-theme="minimal"],
+.resume-theme-minimal {
+  --resume-theme-name: 'minimal';
   
   /* Monochromatic palette */
   --resume-primary-color: #000000;
@@ -275,7 +275,7 @@ export const RESUME_THEMES_CSS = `
 /**
  * Theme configuration types
  */
-export type ResumeThemeName = 'classic' | 'modern' | 'minimalist';
+export type ResumeThemeName = 'classic' | 'modern' | 'minimal';
 
 export type ResumeThemeConfig = {
   name: ResumeThemeName;
@@ -413,8 +413,8 @@ export const THEME_CONFIGS: Record<ResumeThemeName, ResumeThemeConfig> = {
     transitionDuration: 300,
   },
   
-  minimalist: {
-    name: 'minimalist',
+  minimal: {
+    name: 'minimal',
     primaryColor: '#000000',
     secondaryColor: '#333333',
     accentColor: '#000000',
@@ -487,7 +487,7 @@ export function applyTheme(
   const target = container || document.body;
   
   // Remove existing theme classes
-  target.classList.remove('resume-theme-classic', 'resume-theme-modern', 'resume-theme-minimalist');
+  target.classList.remove('resume-theme-classic', 'resume-theme-modern', 'resume-theme-minimal');
   target.removeAttribute('data-resume-theme');
   
   // Apply new theme
@@ -506,7 +506,7 @@ export function getCurrentTheme(container?: HTMLElement): ResumeThemeName {
   const target = container || document.body;
   const themeAttr = target.getAttribute('data-resume-theme');
   
-  if (themeAttr && ['classic', 'modern', 'minimalist'].includes(themeAttr)) {
+  if (themeAttr && ['classic', 'modern', 'minimal'].includes(themeAttr)) {
     return themeAttr as ResumeThemeName;
   }
   
@@ -538,7 +538,7 @@ function getStoredTheme(): ResumeThemeName | null {
   try {
     if (typeof localStorage === 'undefined') return null;
     const stored = localStorage.getItem('resume-theme');
-    if (stored && ['classic', 'modern', 'minimalist'].includes(stored)) {
+    if (stored && ['classic', 'modern', 'minimal'].includes(stored)) {
       return stored as ResumeThemeName;
     }
   } catch {
@@ -627,7 +627,7 @@ export class ThemeSwitcher {
    * Cycle through all available themes
    */
   cycleTheme(): void {
-    const themes: ResumeThemeName[] = ['classic', 'modern', 'minimalist'];
+    const themes: ResumeThemeName[] = ['classic', 'modern', 'minimal'];
     const currentIndex = themes.indexOf(this.currentTheme);
     const nextIndex = (currentIndex + 1) % themes.length;
     this.switchTheme(themes[nextIndex]);
@@ -635,7 +635,7 @@ export class ThemeSwitcher {
 
   /**
    * Toggle to the next theme in the cycle
-   * Cycles through classic → modern → minimalist → classic
+   * Cycles through classic → modern → minimal → classic
    */
   toggleTheme(): void {
     this.cycleTheme();
