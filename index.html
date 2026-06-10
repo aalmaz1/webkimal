@@ -3,126 +3,719 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pretext-based Interactive Resume Engine</title>
+    <title>Resume Studio Pro — Builder & Editor</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='10' y='75' font-size='80'%3E%F0%9F%93%9D%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <style>
-        /* Базовые стили для интерфейса (не для печати) */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+        :root {
+            --sidebar-bg: #121214;
+            --sidebar-border: #27272a;
+            --preview-bg: #2c2c2e;
+            --accent: #30d158;
+            --accent-hover: #28b34b;
+            --danger: #e94560;
+            --text-main: #e4e4e7;
+            --text-dim: #a1a1aa;
+            --input-bg: #1e1e20;
+            --input-border: #3f3f46;
+            --card-bg: #18181b;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--preview-bg);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Split Screen Layout */
+        .sidebar {
+            width: 460px;
+            min-width: 460px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .preview-workspace {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto;
+            padding: 40px 20px;
+            position: relative;
         }
 
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--sidebar-border);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
             display: flex;
-            gap: 15px;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .controls h1 {
-            width: 100%;
-            margin: 0 0 10px 0;
-            font-size: 1.2rem;
-            color: #333;
+        /* Progress Bar */
+        .page-usage-container {
+            margin-top: 16px;
         }
 
-        button, select {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+        .usage-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            color: var(--text-dim);
         }
 
-        button:hover {
-            background-color: #eef;
-            border-color: #ccf;
+        .progress-track {
+            height: 6px;
+            background-color: var(--sidebar-border);
+            border-radius: 3px;
+            overflow: hidden;
         }
 
-        button.primary {
-            background-color: #007bff;
-            color: white;
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .progress-fill.overflow {
+            background-color: var(--danger);
+        }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--sidebar-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            background: none;
             border: none;
+            color: var(--text-dim);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
         }
 
-        button.primary:hover {
-            background-color: #0056b3;
+        .tab-btn.active {
+            color: var(--text-main);
+            border-bottom-color: var(--accent);
+            background-color: rgba(48, 209, 88, 0.05);
         }
 
-        /* Контейнер для резюме (лист А4 визуально) */
+        /* Tab Content */
+        .tab-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Controls */
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            margin-top: 24px;
+            font-weight: 700;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            accent-color: var(--accent);
+        }
+
+        .slider-value {
+            min-width: 45px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            text-align: right;
+            color: var(--text-dim);
+        }
+
+        .input-field {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea.input-field {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--sidebar-border);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--input-border);
+        }
+
+        .btn-danger {
+            background-color: rgba(233, 69, 96, 0.1);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(233, 69, 96, 0.2);
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* Resume Preview Container */
         #resume-container {
             background: white;
             width: 210mm;
             min-height: 297mm;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            padding: 0; /* Отступы управляются темами */
-            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             position: relative;
-            overflow: hidden;
+            transform-origin: top center;
+            color: #333; /* Default text color inside resume */
         }
 
-        /* Стили для печати */
-        @media print {
-            body {
-                background: none;
-                margin: 0;
-                padding: 0;
-            }
+        /* Overflow visual line */
+        .overflow-line {
+            position: absolute;
+            top: 1123px; /* Standard A4 height at 96dpi */
+            left: 0;
+            width: 100%;
+            border-top: 2px dashed var(--danger);
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
 
-            .controls {
+        .overflow-line::after {
+            content: '⚠️ Content Overflows A4 Page';
+            position: absolute;
+            right: 10px;
+            top: -25px;
+            background: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* List Items in Form */
+        .list-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--sidebar-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .list-item-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .bullet-point-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: flex-start;
+        }
+
+        .ai-opt-btn {
+            padding: 4px 8px;
+            background: rgba(48, 209, 88, 0.1);
+            color: var(--accent);
+            border: none;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+            white-space: nowrap;
+        }
+
+        /* Code Editor */
+        #code-editor-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #json-editor {
+            flex-grow: 1;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            background-color: #0d0d0f;
+            border: 1px solid var(--sidebar-border);
+            border-radius: 8px;
+            padding: 16px;
+            color: #d1d1d1;
+            resize: none;
+        }
+
+        .error-badge {
+            background-color: var(--danger);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .has-error .error-badge {
+            display: block;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background-color: var(--card-bg);
+            border: 1px solid var(--sidebar-border);
+            width: 500px;
+            max-width: 90%;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .suggestion-card {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .suggestion-text {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(48, 209, 88, 0.1);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* No print helper */
+        @media print {
+            .sidebar, .modal-overlay, .no-print {
                 display: none !important;
             }
-
-            #resume-container {
-                width: 100%;
-                box-shadow: none;
-                margin: 0;
-                page-break-after: always;
+            body {
+                background: white;
+                height: auto;
+                overflow: visible;
             }
-
-            /* Принудительная печать фоновых цветов для тем */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+            .preview-workspace {
+                padding: 0;
+                display: block;
+                overflow: visible;
+            }
+            #resume-container {
+                width: 210mm !important;
+                height: 297mm !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                transform: none !important;
+            }
+            .overflow-line {
+                display: none !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Панель управления -->
-    <div class="controls">
-        <h1>Resume Builder Controls</h1>
-        
-        <label for="theme-select"><strong>Theme:</strong></label>
-        <select id="theme-select">
-            <option value="classic">Classic</option>
-            <option value="modern">Modern</option>
-            <option value="minimalist">Minimalist</option>
-        </select>
+    <!-- Sidebar Editor -->
+    <aside class="sidebar no-print">
+        <div class="sidebar-header">
+            <h1><span>📝</span> Resume Studio Pro</h1>
+            
+            <div class="page-usage-container">
+                <div class="usage-label">
+                    <span>A4 Page Fullness</span>
+                    <span id="usage-percent">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div id="usage-bar" class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
 
-        <button id="toggle-theme-btn">Toggle Theme</button>
-        <button id="print-btn" class="primary">🖨️ Print / Save PDF</button>
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="layout">Layout</button>
+            <button class="tab-btn" data-tab="content">Content</button>
+            <button class="tab-btn" data-tab="code">Code</button>
+        </nav>
+
+        <!-- Layout Tab -->
+        <div id="tab-layout" class="tab-content active">
+            <section>
+                <h3 class="section-title">Theme Presets</h3>
+                <div class="control-group">
+                    <select id="theme-select" class="input-field">
+                        <option value="classic">Classic Professional</option>
+                        <option value="modern">Modern Bold</option>
+                        <option value="minimalist">Minimalist Clean</option>
+                    </select>
+                </div>
+
+                <h3 class="section-title">Document Spacing</h3>
+                <div class="control-group">
+                    <label>Margin X (Horizontal)</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-margin-x" min="20" max="100" value="48">
+                        <span class="slider-value" id="val-margin-x">48px</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Margin Y (Vertical)</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-margin-y" min="20" max="100" value="48">
+                        <span class="slider-value" id="val-margin-y">48px</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Section Spacing</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-section-spacing" min="10" max="50" value="24">
+                        <span class="slider-value" id="val-section-spacing">24px</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Entry Spacing</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-entry-spacing" min="5" max="30" value="14">
+                        <span class="slider-value" id="val-entry-spacing">14px</span>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Typography</h3>
+                <div class="control-group">
+                    <label>Body Font Size</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-body-size" min="8" max="18" value="11">
+                        <span class="slider-value" id="val-body-size">11px</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Name Font Size</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-name-size" min="18" max="48" value="28">
+                        <span class="slider-value" id="val-name-size">28px</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Line Height</label>
+                    <div class="slider-row">
+                        <input type="range" id="slider-line-height" min="100" max="250" value="150" step="5">
+                        <span class="slider-value" id="val-line-height">1.5</span>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Smart Tools</h3>
+                <button id="autofit-btn" class="btn btn-secondary btn-block">
+                    <span>📏</span> Auto-Fit to A4 Page
+                </button>
+            </section>
+        </div>
+
+        <!-- Content Tab -->
+        <div id="tab-content" class="tab-content">
+            <div id="form-editor">
+                <!-- Personal Details -->
+                <section>
+                    <h3 class="section-title">Personal Details</h3>
+                    <div class="control-group">
+                        <label>Full Name</label>
+                        <input type="text" class="input-field" data-path="personal.name" placeholder="John Doe">
+                    </div>
+                    <div class="control-group">
+                        <label>Professional Title</label>
+                        <input type="text" class="input-field" data-path="personal.title" placeholder="Software Engineer">
+                    </div>
+                    <div class="actions-grid">
+                        <div class="control-group">
+                            <label>Email</label>
+                            <input type="email" class="input-field" data-path="personal.email" placeholder="john@example.com">
+                        </div>
+                        <div class="control-group">
+                            <label>Phone</label>
+                            <input type="text" class="input-field" data-path="personal.phone" placeholder="+1 234 567 890">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Location</label>
+                        <input type="text" class="input-field" data-path="personal.location" placeholder="City, State">
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="section-title">Professional Summary</h3>
+                    <div class="control-group">
+                        <textarea class="input-field" data-path="summary" placeholder="Write a brief overview..."></textarea>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="list-section-header">
+                        <h3 class="section-title">Work Experience</h3>
+                    </div>
+                    <div id="experience-list"></div>
+                    <button id="add-experience-btn" class="btn btn-secondary btn-small btn-block">+ Add Experience</button>
+                </section>
+
+                <section>
+                    <div class="list-section-header">
+                        <h3 class="section-title">Education</h3>
+                    </div>
+                    <div id="education-list"></div>
+                    <button id="add-education-btn" class="btn btn-secondary btn-small btn-block">+ Add Education</button>
+                </section>
+
+                <section>
+                    <h3 class="section-title">Skills</h3>
+                    <div class="control-group">
+                        <label>Comma-separated skills</label>
+                        <textarea id="skills-input" class="input-field" placeholder="React, TypeScript, Node.js..."></textarea>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Code Tab -->
+        <div id="tab-code" class="tab-content">
+            <div id="code-editor-container">
+                <textarea id="json-editor" spellcheck="false"></textarea>
+                <div id="json-error" class="error-badge">
+                    Invalid JSON format. Please check your syntax.
+                </div>
+                <div class="actions-grid">
+                    <button id="export-json-btn" class="btn btn-secondary">Download JSON</button>
+                    <button id="import-json-trigger" class="btn btn-secondary">Upload JSON</button>
+                </div>
+                <input type="file" id="import-json-input" style="display: none;" accept=".json">
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="sidebar-header" style="border-top: 1px solid var(--sidebar-border); border-bottom: none; margin-top: auto;">
+            <button id="print-btn" class="btn btn-primary btn-block">
+                <span>🖨️</span> Print / Export PDF (A4)
+            </button>
+        </div>
+    </aside>
+
+    <!-- Preview Area -->
+    <main class="preview-workspace">
+        <div id="resume-container">
+            <!-- Dynamic Content -->
+            <div id="resume-content"></div>
+            <!-- Overflow Line -->
+            <div id="overflow-line" class="overflow-line"></div>
+        </div>
+    </main>
+
+    <!-- AI Optimizer Modal -->
+    <div id="ai-modal" class="modal-overlay">
+        <div class="modal">
+            <div id="ai-modal-loading" class="loader" style="display: none;">
+                <div class="spinner"></div>
+                <p>AI is optimizing your bullet point...</p>
+            </div>
+            
+            <div id="ai-modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">✨ AI Bullet Point Optimizer</h2>
+                    <p style="font-size: 0.875rem; color: var(--text-dim); margin-top: 4px;">Choose a more impactful version of your experience.</p>
+                </div>
+                
+                <div class="control-group">
+                    <label>Original Bullet</label>
+                    <p id="original-bullet-text" style="font-size: 0.875rem; padding: 12px; background: var(--input-bg); border-radius: 6px; color: var(--text-dim);"></p>
+                </div>
+
+                <div class="control-group">
+                    <label>Target Job Description (Optional)</label>
+                    <textarea id="target-jd" class="input-field" placeholder="Paste JD here to tailor suggestions..." style="min-height: 60px;"></textarea>
+                </div>
+
+                <div id="ai-suggestions">
+                    <!-- Suggestions will be injected here -->
+                </div>
+
+                <div style="margin-top: 24px; text-align: right;">
+                    <button id="close-ai-modal" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Область рендеринга резюме -->
-    <div id="resume-container">
-        <!-- Сюда будет вставлено резюме -->
-        <p style="padding: 20px; color: #666;">Loading resume engine...</p>
-    </div>
-
-    <!-- Подключение основного скрипта (будет скомпилирован из main.ts) -->
+    <!-- Main Script -->
     <script type="module" src="./bundle.js"></script>
 </body>
 </html>
