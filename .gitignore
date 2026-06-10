@@ -1,6 +1,13 @@
 ```
 # Build artifacts
 bundle.js
+dist/
+build/
+*.min.js
+*.bundle.js
+
+# Dependencies
+node_modules/
 
 # Logs and temp files
 *.log
@@ -14,7 +21,46 @@ bundle.js
 # Editors
 .vscode/
 .idea/
+*.swp
 
-# Dependencies
-node_modules/
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
+
+# Compiled and binary
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+*.out
+
+# Compression
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+
+# System files
+.DS_Store
+Thumbs.db
 ```

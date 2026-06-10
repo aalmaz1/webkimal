@@ -91,6 +91,18 @@ let state: AppState = {
 let themeSwitcher: ThemeSwitcher;
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🔍 DOMContentLoaded fired');
+    const container = document.getElementById('resume-container');
+    if (!container) {
+        console.error('❌ #resume-container NOT FOUND!');
+        return;
+    }
+    console.log('✅ #resume-container found:', container);
+    
+    // Visual debug - add red border temporarily
+    container.style.border = '3px solid red';
+    console.log('🎨 Added debug border to container');
+    
     loadState();
     initUI();
     updatePreview();
@@ -414,6 +426,9 @@ function renderEducationList() {
 function updatePreview() {
     const container = document.getElementById('resume-container')!;
     
+    console.log('📝 updatePreview called');
+    console.log('📊 Resume data:', state.resumeData);
+    
     // Apply layout settings as CSS variables
     container.style.setProperty('--resume-margin-x', `${state.layoutSettings.marginX}px`);
     container.style.setProperty('--resume-margin-y', `${state.layoutSettings.marginY}px`);
@@ -423,7 +438,9 @@ function updatePreview() {
     container.style.setProperty('--resume-name-font-size', `${state.layoutSettings.nameSize}px`);
     container.style.setProperty('--resume-body-line-height', (state.layoutSettings.lineHeight / 100).toString());
 
+    console.log('🎨 Calling renderResume...');
     renderResume(state.resumeData, container);
+    console.log('✅ renderResume completed');
     measureFullness();
 }
 
