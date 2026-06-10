@@ -196,8 +196,16 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
   if (!data) return
   if (!container) throw new Error('renderResume: container is required')
 
+  // Save overflow-line if it exists
+  const overflowLine = container.querySelector('#overflow-line')
+  
   container.innerHTML = ''
   container.classList.add('resume-container')
+
+  // Restore overflow-line after clearing
+  if (overflowLine) {
+    container.appendChild(overflowLine)
+  }
 
   const style = getComputedStyle(container)
 
@@ -293,4 +301,6 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
   if (skills?.length) {
     container.appendChild(createSkillSection(skills))
   }
+  
+  console.log('Resume rendered successfully')
 }

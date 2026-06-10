@@ -293,6 +293,131 @@
             width: 100%;
         }
 
+        /* Resume Content Styles */
+        .resume-header {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .resume-name {
+            font-size: var(--resume-name-font-size, 28px);
+            font-weight: var(--resume-name-font-weight, 700);
+            font-family: var(--resume-name-font, 'Georgia', serif);
+            margin-bottom: 8px;
+            color: var(--resume-primary-color, #2c3e50);
+        }
+
+        .resume-title {
+            font-size: var(--resume-subsection-font-size, 14px);
+            font-weight: var(--resume-subsection-font-weight, 600);
+            font-family: var(--resume-subsection-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-secondary-color, #34495e);
+            margin-bottom: 12px;
+        }
+
+        .resume-contact {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-muted-color, #7f8c8d);
+        }
+
+        .resume-section {
+            margin-bottom: var(--resume-section-spacing, 24px);
+        }
+
+        .resume-section-title {
+            font-size: var(--resume-section-title-font-size, 14px);
+            font-weight: var(--resume-section-title-font-weight, 700);
+            font-family: var(--resume-section-title-font, 'Helvetica Neue', sans-serif);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--resume-primary-color, #2c3e50);
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: var(--resume-section-underline-height, 2px) solid var(--resume-section-underline-color, #3498db);
+            max-width: var(--resume-section-underline-width, 60px);
+        }
+
+        .resume-entry {
+            margin-bottom: var(--resume-entry-spacing, 14px);
+        }
+
+        .entry-title {
+            font-size: var(--resume-body-font-size, 11px);
+            font-weight: 600;
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-text-color, #333);
+            margin-bottom: 4px;
+        }
+
+        .entry-subtitle {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-muted-color, #7f8c8d);
+            margin-bottom: 4px;
+        }
+
+        .entry-meta {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-accent-color, #3498db);
+            margin-bottom: 8px;
+        }
+
+        .entry-highlights {
+            margin-left: 0;
+            padding-left: 16px;
+        }
+
+        .entry-highlights li {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-text-color, #333);
+            line-height: var(--resume-body-line-height, 1.5);
+            margin-bottom: 4px;
+        }
+
+        .entry-highlights li::marker {
+            color: var(--resume-bullet-color, #7f8c8d);
+        }
+
+        .resume-summary {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-text-color, #333);
+            line-height: var(--resume-body-line-height, 1.5);
+            white-space: pre-wrap;
+        }
+
+        .skills-content {
+            margin-top: 8px;
+        }
+
+        .skills-row {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-text-color, #333);
+            line-height: var(--resume-body-line-height, 1.5);
+        }
+
+        .skill-category {
+            margin-bottom: 12px;
+        }
+
+        .skill-category-title {
+            font-size: var(--resume-body-font-size, 11px);
+            font-weight: 600;
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-primary-color, #2c3e50);
+            margin-bottom: 4px;
+        }
+
+        .skill-category-list {
+            font-size: var(--resume-body-font-size, 11px);
+            font-family: var(--resume-body-font, 'Helvetica Neue', sans-serif);
+            color: var(--resume-text-color, #333);
+        }
+
         /* Overflow visual line */
         .overflow-line {
             position: absolute;
