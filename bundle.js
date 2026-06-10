@@ -3358,8 +3358,12 @@ function buildFontShorthand(style, prefix) {
 function renderResume(data, container) {
   if (!data) return;
   if (!container) throw new Error("renderResume: container is required");
+  const overflowLine = container.querySelector("#overflow-line");
   container.innerHTML = "";
   container.classList.add("resume-container");
+  if (overflowLine) {
+    container.appendChild(overflowLine);
+  }
   const style = getComputedStyle(container);
   const marginX = readCssVarPx(style, "margin-x", 48);
   const marginY = readCssVarPx(style, "margin-y", 48);
@@ -3437,6 +3441,7 @@ function renderResume(data, container) {
   if (skills?.length) {
     container.appendChild(createSkillSection(skills));
   }
+  console.log("Resume rendered successfully");
 }
 
 // resume-themes.ts
