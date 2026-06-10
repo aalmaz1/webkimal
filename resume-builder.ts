@@ -1,24 +1,20 @@
 /**
- * Resume Builder for Pretext Engine
- *
- * Provides functions to render structured resume data into DOM elements
- * using the Pretext layout engine for precise text measurement.
+ * Resume Builder - Simplified version without external dependencies
+ * Uses native DOM manipulation for reliable rendering
  */
 
 import type { ResumeData, Skills, SkillCategory } from './types.js'
-import { prepareWithSegments, layoutWithLines, type PreparedTextWithSegments, type LayoutLine as PretextLayoutLine } from '@chenglou/pretext'
 
 export type { ResumeData }
 
 /**
  * A positioned block representing a laid-out text element on the page.
- * Used for precise text measurement and positioning.
  */
 export type PositionedBlock = {
   x: number
   y: number
   width: number
-  lines: PretextLayoutLine[]
+  height: number
   type: 'name' | 'title' | 'contact' | 'section' | 'entry' | 'summary' | 'skill'
 }
 
@@ -42,9 +38,9 @@ export function createPositionedBlock(
   x: number,
   y: number,
   width: number,
-  lines: PretextLayoutLine[],
+  height: number,
 ): PositionedBlock {
-  return { type, x, y, width, lines }
+  return { type, x, y, width, height }
 }
 
 /**
@@ -62,15 +58,6 @@ export function createLayoutLine(
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
-
-function prepareText(text: string, font: string): PreparedTextWithSegments {
-  return prepareWithSegments(text, font)
-}
-
-function measureTextHeight(prepared: PreparedTextWithSegments, maxWidth: number, lineHeight: number): number {
-  const result = layoutWithLines(prepared, maxWidth, lineHeight)
-  return result.height
-}
 
 function formatContactItem(value: string): string {
   return value.replace(/^https?:\/\//, '').replace(/^www\./, '')
@@ -96,12 +83,10 @@ function createBlock<K extends keyof HTMLElementTagNameMap>(tagName: K, classNam
 }
 
 function createParagraph(text: string, font: string, maxWidth: number, lineHeight: number, className: string): HTMLElement {
-  const prepared = prepareText(text, font)
-  const estimatedHeight = measureTextHeight(prepared, maxWidth, lineHeight)
   const paragraph = createBlock('div', className, text)
   paragraph.style.whiteSpace = 'pre-wrap'
   paragraph.style.lineHeight = `${lineHeight}px`
-  paragraph.style.minHeight = `${Math.max(estimatedHeight, lineHeight)}px`
+  paragraph.style.minHeight = `${Math.max(lineHeight, 20)}px`
   return paragraph
 }
 
