@@ -196,6 +196,9 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
   if (!data) return
   if (!container) throw new Error('renderResume: container is required')
 
+  console.log('🚀 renderResume starting with data:', data)
+  console.log('📦 Container:', container)
+
   // Save overflow-line if it exists
   const overflowLine = container.querySelector('#overflow-line')
   
@@ -220,6 +223,9 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
   const subsectionFont = buildFontShorthand(style, 'subsection')
   const bodyFont = buildFontShorthand(style, 'body')
 
+  console.log('📏 Layout settings - marginX:', marginX, 'marginY:', marginY, 'pageWidth:', pageWidth)
+  console.log('🔤 Fonts - nameFont:', nameFont, 'bodyFont:', bodyFont)
+
   container.style.padding = `${marginY}px ${marginX}px ${marginY}px ${marginX}px`
   container.style.maxWidth = `${pageWidth}px`
   container.style.boxSizing = 'border-box'
@@ -231,11 +237,13 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
   const nameElement = createBlock('h1', 'resume-name', personal?.name)
   nameElement.style.font = nameFont
   header.appendChild(nameElement)
+  console.log('📛 Created name element:', nameElement.textContent)
 
   if (personal?.title) {
     const titleElement = createBlock('div', 'resume-title', personal.title)
     titleElement.style.font = subsectionFont
     header.appendChild(titleElement)
+    console.log('💼 Created title element:', titleElement.textContent)
   }
 
   if (personal) {
@@ -244,10 +252,12 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
       const contactElement = createBlock('div', 'resume-contact', contactLine)
       contactElement.style.font = bodyFont
       header.appendChild(contactElement)
+      console.log('📞 Created contact element:', contactElement.textContent)
     }
   }
 
   container.appendChild(header)
+  console.log('📑 Appended header to container')
 
   // Summary
   if (summary) {

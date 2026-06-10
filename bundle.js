@@ -3358,6 +3358,8 @@ function buildFontShorthand(style, prefix) {
 function renderResume(data, container) {
   if (!data) return;
   if (!container) throw new Error("renderResume: container is required");
+  console.log("\u{1F680} renderResume starting with data:", data);
+  console.log("\u{1F4E6} Container:", container);
   const overflowLine = container.querySelector("#overflow-line");
   container.innerHTML = "";
   container.classList.add("resume-container");
@@ -3374,6 +3376,8 @@ function renderResume(data, container) {
   const nameFont = buildFontShorthand(style, "name");
   const subsectionFont = buildFontShorthand(style, "subsection");
   const bodyFont = buildFontShorthand(style, "body");
+  console.log("\u{1F4CF} Layout settings - marginX:", marginX, "marginY:", marginY, "pageWidth:", pageWidth);
+  console.log("\u{1F524} Fonts - nameFont:", nameFont, "bodyFont:", bodyFont);
   container.style.padding = `${marginY}px ${marginX}px ${marginY}px ${marginX}px`;
   container.style.maxWidth = `${pageWidth}px`;
   container.style.boxSizing = "border-box";
@@ -3382,10 +3386,12 @@ function renderResume(data, container) {
   const nameElement = createBlock("h1", "resume-name", personal?.name);
   nameElement.style.font = nameFont;
   header.appendChild(nameElement);
+  console.log("\u{1F4DB} Created name element:", nameElement.textContent);
   if (personal?.title) {
     const titleElement = createBlock("div", "resume-title", personal.title);
     titleElement.style.font = subsectionFont;
     header.appendChild(titleElement);
+    console.log("\u{1F4BC} Created title element:", titleElement.textContent);
   }
   if (personal) {
     const contactLine = buildContactLine(personal);
@@ -3393,9 +3399,11 @@ function renderResume(data, container) {
       const contactElement = createBlock("div", "resume-contact", contactLine);
       contactElement.style.font = bodyFont;
       header.appendChild(contactElement);
+      console.log("\u{1F4DE} Created contact element:", contactElement.textContent);
     }
   }
   container.appendChild(header);
+  console.log("\u{1F4D1} Appended header to container");
   if (summary) {
     const summarySection = createSection("Professional Summary");
     summarySection.appendChild(
@@ -4557,6 +4565,15 @@ var state = {
 };
 var themeSwitcher;
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("\u{1F50D} DOMContentLoaded fired");
+  const container = document.getElementById("resume-container");
+  if (!container) {
+    console.error("\u274C #resume-container NOT FOUND!");
+    return;
+  }
+  console.log("\u2705 #resume-container found:", container);
+  container.style.border = "3px solid red";
+  console.log("\u{1F3A8} Added debug border to container");
   loadState();
   initUI();
   updatePreview();
@@ -4828,6 +4845,8 @@ function renderEducationList() {
 }
 function updatePreview() {
   const container = document.getElementById("resume-container");
+  console.log("\u{1F4DD} updatePreview called");
+  console.log("\u{1F4CA} Resume data:", state.resumeData);
   container.style.setProperty("--resume-margin-x", `${state.layoutSettings.marginX}px`);
   container.style.setProperty("--resume-margin-y", `${state.layoutSettings.marginY}px`);
   container.style.setProperty("--resume-section-spacing", `${state.layoutSettings.sectionSpacing}px`);
@@ -4835,7 +4854,9 @@ function updatePreview() {
   container.style.setProperty("--resume-body-font-size", `${state.layoutSettings.bodySize}px`);
   container.style.setProperty("--resume-name-font-size", `${state.layoutSettings.nameSize}px`);
   container.style.setProperty("--resume-body-line-height", (state.layoutSettings.lineHeight / 100).toString());
+  console.log("\u{1F3A8} Calling renderResume...");
   renderResume(state.resumeData, container);
+  console.log("\u2705 renderResume completed");
   measureFullness();
 }
 function measureFullness() {
