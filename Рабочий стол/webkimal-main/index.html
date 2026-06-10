@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pretext-Based Interactive Resume Engine</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body class="theme-classic">
+
+  <!-- Controls: Theme Switcher + Print -->
+  <div class="controls-bar no-print">
+    <button id="btn-classic">Classic</button>
+    <button id="btn-modern">Modern</button>
+    <button id="btn-minimal">Minimal</button>
+    <button id="btn-print">⎙ Export PDF</button>
+  </div>
+
+  <!-- Resume Preview Area -->
+  <div id="resume-container"></div>
+
+  <script type="module" src="src/main.ts"></script>
+</body>
+</html>
