@@ -107,7 +107,7 @@ function createParagraph(text: string, font: string, maxWidth: number, lineHeigh
 
 function createSection(title: string): HTMLElement {
   const section = createBlock('section', 'resume-section')
-  const heading = createBlock('div', 'resume-section-title', title)
+  const heading = createBlock('h2', 'resume-section-title', title)
   section.appendChild(heading)
   return section
 }
@@ -120,7 +120,7 @@ function createEntry(
   entrySpacing: number,
 ): HTMLElement {
   const entry = createBlock('div', 'resume-entry')
-  entry.appendChild(createBlock('div', 'entry-title', title))
+  entry.appendChild(createBlock('h3', 'entry-title', title))
   if (subtitle) {
     entry.appendChild(createBlock('div', 'entry-subtitle', subtitle))
   }
@@ -151,7 +151,7 @@ function createSkillSection(skills: Skills): HTMLElement {
   } else {
     (skills as SkillCategory[]).forEach((category) => {
       const group = createBlock('div', 'skill-category')
-      group.appendChild(createBlock('div', 'skill-category-title', category.category))
+      group.appendChild(createBlock('h3', 'skill-category-title', category.category))
       group.appendChild(createBlock('div', 'skill-category-list', category.skills.join(' · ')))
       content.appendChild(group)
     })
@@ -220,7 +220,7 @@ export function renderResume(data: ResumeData, container: HTMLElement): void {
 
   // Header
   const header = createBlock('header', 'resume-header')
-  const nameElement = createBlock('div', 'resume-name', personal?.name)
+  const nameElement = createBlock('h1', 'resume-name', personal?.name)
   nameElement.style.font = nameFont
   header.appendChild(nameElement)
 

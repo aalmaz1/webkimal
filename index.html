@@ -515,8 +515,9 @@
         <!-- Layout Tab -->
         <div id="tab-layout" class="tab-content active">
             <section>
-                <h3 class="section-title">Theme Presets</h3>
+                <h2 class="section-title">Theme Presets</h2>
                 <div class="control-group">
+                    <label for="theme-select">Select Theme</label>
                     <select id="theme-select" class="input-field">
                         <option value="classic">Classic Professional</option>
                         <option value="modern">Modern Bold</option>
@@ -524,60 +525,60 @@
                     </select>
                 </div>
 
-                <h3 class="section-title">Document Spacing</h3>
+                <h2 class="section-title">Document Spacing</h2>
                 <div class="control-group">
-                    <label>Margin X (Horizontal)</label>
+                    <label for="slider-margin-x">Margin X (Horizontal)</label>
                     <div class="slider-row">
                         <input type="range" id="slider-margin-x" min="20" max="100" value="48">
                         <span class="slider-value" id="val-margin-x">48px</span>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label>Margin Y (Vertical)</label>
+                    <label for="slider-margin-y">Margin Y (Vertical)</label>
                     <div class="slider-row">
                         <input type="range" id="slider-margin-y" min="20" max="100" value="48">
                         <span class="slider-value" id="val-margin-y">48px</span>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label>Section Spacing</label>
+                    <label for="slider-section-spacing">Section Spacing</label>
                     <div class="slider-row">
                         <input type="range" id="slider-section-spacing" min="10" max="50" value="24">
                         <span class="slider-value" id="val-section-spacing">24px</span>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label>Entry Spacing</label>
+                    <label for="slider-entry-spacing">Entry Spacing</label>
                     <div class="slider-row">
                         <input type="range" id="slider-entry-spacing" min="5" max="30" value="14">
                         <span class="slider-value" id="val-entry-spacing">14px</span>
                     </div>
                 </div>
 
-                <h3 class="section-title">Typography</h3>
+                <h2 class="section-title">Typography</h2>
                 <div class="control-group">
-                    <label>Body Font Size</label>
+                    <label for="slider-body-size">Body Font Size</label>
                     <div class="slider-row">
                         <input type="range" id="slider-body-size" min="8" max="18" value="11">
                         <span class="slider-value" id="val-body-size">11px</span>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label>Name Font Size</label>
+                    <label for="slider-name-size">Name Font Size</label>
                     <div class="slider-row">
                         <input type="range" id="slider-name-size" min="18" max="48" value="28">
                         <span class="slider-value" id="val-name-size">28px</span>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label>Line Height</label>
+                    <label for="slider-line-height">Line Height</label>
                     <div class="slider-row">
                         <input type="range" id="slider-line-height" min="100" max="250" value="150" step="5">
                         <span class="slider-value" id="val-line-height">1.5</span>
                     </div>
                 </div>
 
-                <h3 class="section-title">Smart Tools</h3>
+                <h2 class="section-title">Smart Tools</h2>
                 <div class="actions-grid">
                     <button id="autofit-btn" class="btn btn-secondary">
                         <span>📏</span> Auto-Fit
@@ -597,33 +598,33 @@
             <div id="form-editor">
                 <!-- Personal Details -->
                 <section>
-                    <h3 class="section-title">Personal Details</h3>
+                    <h2 class="section-title">Personal Details</h2>
                     <div class="control-group">
-                        <label>Full Name</label>
-                        <input type="text" class="input-field" data-path="personal.name" placeholder="John Doe">
+                        <label for="personal-name">Full Name</label>
+                        <input type="text" id="personal-name" class="input-field" data-path="personal.name" placeholder="John Doe">
                     </div>
                     <div class="control-group">
-                        <label>Professional Title</label>
-                        <input type="text" class="input-field" data-path="personal.title" placeholder="Software Engineer">
+                        <label for="personal-title">Professional Title</label>
+                        <input type="text" id="personal-title" class="input-field" data-path="personal.title" placeholder="Software Engineer">
                     </div>
                     <div class="actions-grid">
                         <div class="control-group">
-                            <label>Email</label>
-                            <input type="email" class="input-field" data-path="personal.email" placeholder="john@example.com">
+                            <label for="personal-email">Email</label>
+                            <input type="email" id="personal-email" class="input-field" data-path="personal.email" placeholder="john@example.com">
                         </div>
                         <div class="control-group">
-                            <label>Phone</label>
-                            <input type="text" class="input-field" data-path="personal.phone" placeholder="+1 234 567 890">
+                            <label for="personal-phone">Phone</label>
+                            <input type="text" id="personal-phone" class="input-field" data-path="personal.phone" placeholder="+1 234 567 890">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label>Location</label>
-                        <input type="text" class="input-field" data-path="personal.location" placeholder="City, State">
+                        <label for="personal-location">Location</label>
+                        <input type="text" id="personal-location" class="input-field" data-path="personal.location" placeholder="City, State">
                     </div>
                 </section>
 
                 <section>
-                    <h3 class="section-title">Professional Summary</h3>
+                    <h2 class="section-title">Professional Summary</h2>
                     <div class="control-group">
                         <textarea class="input-field" data-path="summary" placeholder="Write a brief overview..."></textarea>
                     </div>
@@ -631,7 +632,7 @@
 
                 <section>
                     <div class="list-section-header">
-                        <h3 class="section-title">Work Experience</h3>
+                        <h2 class="section-title">Work Experience</h2>
                     </div>
                     <div id="experience-list"></div>
                     <button id="add-experience-btn" class="btn btn-secondary btn-small btn-block">+ Add Experience</button>
@@ -639,16 +640,16 @@
 
                 <section>
                     <div class="list-section-header">
-                        <h3 class="section-title">Education</h3>
+                        <h2 class="section-title">Education</h2>
                     </div>
                     <div id="education-list"></div>
                     <button id="add-education-btn" class="btn btn-secondary btn-small btn-block">+ Add Education</button>
                 </section>
 
                 <section>
-                    <h3 class="section-title">Skills</h3>
+                    <h2 class="section-title">Skills</h2>
                     <div class="control-group">
-                        <label>Comma-separated skills</label>
+                        <label for="skills-input">Comma-separated skills</label>
                         <textarea id="skills-input" class="input-field" placeholder="React, TypeScript, Node.js..."></textarea>
                     </div>
                 </section>
