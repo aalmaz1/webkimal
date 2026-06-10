@@ -30,12 +30,13 @@ jobs:
         run: npm install      
         
       - name: Build project (esbuild bundle)
-        run: npx esbuild main.ts --bundle --outfile=bundle.js --format=esm --platform=browser --target=es2020      
+        run: npx esbuild main.ts --bundle --outfile=bundle.js --format=esm --platform=browser --target=es2020  --minify    
           
       - name: Upload artifact        
         uses: actions/upload-pages-artifact@v3        
         with:          
-          path: '.'
+          path: './dist'
+          
   deploy:    
     environment:      
       name: github-pages      
