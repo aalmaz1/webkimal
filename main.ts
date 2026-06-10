@@ -2,6 +2,7 @@ import { renderResume } from './resume-builder.js'
 import { ThemeSwitcher, type ResumeThemeName } from './resume-themes.js'
 import { printResume } from './print-utils.js'
 import type { ResumeData } from './types.js'
+import { analyzeResume, enhanceBulletPoint, checkATSCompatibility, type ResumeAnalysis } from './ai-utils.js'
 
 // --- State Management ---
 
@@ -228,6 +229,12 @@ function initUI() {
 
     // Auto-fit
     document.getElementById('autofit-btn')?.addEventListener('click', runAutoFit);
+
+    // Feature 4: AI Resume Analysis
+    document.getElementById('analyze-resume-btn')?.addEventListener('click', analyzeResumeAction);
+
+    // Feature 5: ATS Compatibility Check
+    document.getElementById('check-ats-btn')?.addEventListener('click', checkATSAction);
 
     // Print
     document.getElementById('print-btn')?.addEventListener('click', () => {
@@ -578,7 +585,10 @@ function updateCodeEditor() {
     jsonEditor.value = JSON.stringify(state.resumeData, null, 2);
 }
 
-// --- Mock AI Optimizer ---
+
+// --- AI-Powered Resume Analysis & Enhancement ---
+
+let currentAnalysis: ResumeAnalysis | null = null;
 
 function openAIModal(expIdx: number, hIdx: number) {
     const originalText = state.resumeData.experience![expIdx].highlights![hIdx];
@@ -587,12 +597,13 @@ function openAIModal(expIdx: number, hIdx: number) {
     document.getElementById('ai-modal-loading')!.style.display = 'flex';
     document.getElementById('ai-modal-content')!.style.display = 'none';
 
-    // Mock AI call
+    // Use real AI enhancement from ai-utils.ts
     setTimeout(() => {
-        const suggestions = generateMockSuggestions(originalText, (document.getElementById('target-jd') as HTMLTextAreaElement).value);
+        const jd = (document.getElementById('target-jd') as HTMLTextAreaElement).value;
+        const suggestions = enhanceBulletPoint(originalText, jd);
         const container = document.getElementById('ai-suggestions')!;
         container.innerHTML = '';
-        
+
         suggestions.forEach(s => {
             const card = document.createElement('div');
             card.className = 'suggestion-card';
@@ -609,23 +620,95 @@ function openAIModal(expIdx: number, hIdx: number) {
 
         document.getElementById('ai-modal-loading')!.style.display = 'none';
         document.getElementById('ai-modal-content')!.style.display = 'block';
-    }, 1000);
+    }, 500);
 }
 
-function generateMockSuggestions(text: string, jd: string): string[] {
-    const lowerText = text.toLowerCase();
-    const lowerJd = jd.toLowerCase();
+/**
+ * Feature 4: AI Resume Analyzer - Comprehensive resume analysis with scoring
+ */
+function analyzeResumeAction() {
+    currentAnalysis = analyzeResume(state.resumeData);
     
-    let technicalTerm = "Node.js API";
-    if (lowerText.includes("react") || lowerJd.includes("react") || lowerJd.includes("frontend")) {
-        technicalTerm = "React component architecture";
-    } else if (lowerText.includes("python") || lowerJd.includes("python") || lowerJd.includes("data")) {
-        technicalTerm = "Python data processing pipeline";
-    }
+    const modal = document.getElementById('analysis-modal')!;
+    const loading = document.getElementById('analysis-loading')!;
+    const content = document.getElementById('analysis-content')!;
+    
+    modal.style.display = 'flex';
+    loading.style.display = 'flex';
+    content.style.display = 'none';
+    
+    setTimeout(() => {
+        if (!currentAnalysis) return;
+        
+        // Populate analysis results
+        document.getElementById('overall-score')!.textContent = currentAnalysis.overallScore.toString();
+        
+        // Category scores
+        document.getElementById('clarity-score')!.textContent = currentAnalysis.categoryScores.clarity.toString();
+        document.getElementById('impact-score')!.textContent = currentAnalysis.categoryScores.impact.toString();
+        document.getElementById('ats-score')!.textContent = currentAnalysis.categoryScores.atsCompatibility.toString();
+        document.getElementById('formatting-score')!.textContent = currentAnalysis.categoryScores.formatting.toString();
+        
+        // Strengths
+        const strengthsList = document.getElementById('strengths-list')!;
+        strengthsList.innerHTML = currentAnalysis.strengths.map(s => `<li>✅ ${s}</li>`).join('');
+        
+        // Weaknesses
+        const weaknessesList = document.getElementById('weaknesses-list')!;
+        weaknessesList.innerHTML = currentAnalysis.weaknesses.map(w => `<li>⚠️ ${w}</li>`).join('');
+        
+        // Suggestions
+        const suggestionsList = document.getElementById('suggestions-list')!;
+        suggestionsList.innerHTML = currentAnalysis.suggestions.map(s => `
+            <div class="suggestion-item">
+                <span class="suggestion-type type-${s.type}">${s.type.toUpperCase()}</span>
+                <p class="suggestion-desc">${s.suggestion}</p>
+                <p class="suggestion-explanation">${s.explanation}</p>
+            </div>
+        `).join('');
+        
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    }, 800);
+}
 
-    return [
-        `Spearheaded ${technicalTerm} integration, boosting request throughput by 45% and reducing latency across core services.`,
-        `Architected and deployed a scalable ${technicalTerm} solution that handled 1M+ daily active users with 99.9% uptime.`,
-        `Optimized existing ${technicalTerm} workflows, resulting in a 30% reduction in cloud infrastructure costs and improved developer velocity.`
-    ];
+/**
+ * Feature 5: ATS Compatibility Checker
+ */
+function checkATSAction() {
+    const atsResult = checkATSCompatibility(state.resumeData);
+    
+    const modal = document.getElementById('ats-modal')!;
+    const scoreDisplay = document.getElementById('ats-score-display')!;
+    const issuesList = document.getElementById('ats-issues-list')!;
+    const recommendationsList = document.getElementById('ats-recommendations-list')!;
+    
+    modal.style.display = 'flex';
+    
+    // Score with color coding
+    let scoreColor = '#30d158';
+    if (atsResult.score < 70) scoreColor = '#e94560';
+    else if (atsResult.score < 85) scoreColor = '#f5a623';
+    
+    scoreDisplay.innerHTML = `
+        <div class="ats-score-circle" style="border-color: ${scoreColor}">
+            <span style="color: ${scoreColor}">${atsResult.score}</span>
+        </div>
+        <p>ATS Compatibility Score</p>
+    `;
+    
+    // Issues
+    if (atsResult.issues.length > 0) {
+        issuesList.innerHTML = atsResult.issues.map(issue => `<li>❌ ${issue}</li>`).join('');
+        document.getElementById('ats-issues-section')!.style.display = 'block';
+    } else {
+        document.getElementById('ats-issues-section')!.style.display = 'none';
+    }
+    
+    // Recommendations
+    if (atsResult.recommendations.length > 0) {
+        recommendationsList.innerHTML = atsResult.recommendations.map(rec => `<li>💡 ${rec}</li>`).join('');
+    } else {
+        recommendationsList.innerHTML = '<li>🎉 Your resume is well-optimized for ATS!</li>';
+    }
 }
