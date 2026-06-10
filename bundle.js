@@ -3294,13 +3294,13 @@ function createParagraph(text, font, maxWidth, lineHeight, className) {
 }
 function createSection(title) {
   const section = createBlock("section", "resume-section");
-  const heading = createBlock("div", "resume-section-title", title);
+  const heading = createBlock("h2", "resume-section-title", title);
   section.appendChild(heading);
   return section;
 }
 function createEntry(title, subtitle, meta, highlights, entrySpacing) {
   const entry = createBlock("div", "resume-entry");
-  entry.appendChild(createBlock("div", "entry-title", title));
+  entry.appendChild(createBlock("h3", "entry-title", title));
   if (subtitle) {
     entry.appendChild(createBlock("div", "entry-subtitle", subtitle));
   }
@@ -3330,7 +3330,7 @@ function createSkillSection(skills) {
   } else {
     skills.forEach((category) => {
       const group = createBlock("div", "skill-category");
-      group.appendChild(createBlock("div", "skill-category-title", category.category));
+      group.appendChild(createBlock("h3", "skill-category-title", category.category));
       group.appendChild(createBlock("div", "skill-category-list", category.skills.join(" \xB7 ")));
       content.appendChild(group);
     });
@@ -3375,7 +3375,7 @@ function renderResume(data, container) {
   container.style.boxSizing = "border-box";
   const { personal, summary, experience, education, skills } = data;
   const header = createBlock("header", "resume-header");
-  const nameElement = createBlock("div", "resume-name", personal?.name);
+  const nameElement = createBlock("h1", "resume-name", personal?.name);
   nameElement.style.font = nameFont;
   header.appendChild(nameElement);
   if (personal?.title) {
