@@ -531,6 +531,28 @@ export function getComputedVariable(
 }
 
 /**
+ * Get the stored theme from localStorage
+ * @returns The stored theme name, or null if none is stored
+ */
+function getStoredTheme(): ResumeThemeName | null {
+  if (typeof localStorage === 'undefined') return null;
+  const stored = localStorage.getItem('resume-theme');
+  if (stored && ['classic', 'modern', 'minimalist'].includes(stored)) {
+    return stored as ResumeThemeName;
+  }
+  return null;
+}
+
+/**
+ * Store a theme name in localStorage
+ * @param theme - The theme name to store
+ */
+function setStoredTheme(theme: ResumeThemeName): void {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem('resume-theme', theme);
+}
+
+/**
  * Theme Switcher Class
  * Provides a complete API for managing resume themes with callbacks
  */
@@ -601,6 +623,14 @@ export class ThemeSwitcher {
     const currentIndex = themes.indexOf(this.currentTheme);
     const nextIndex = (currentIndex + 1) % themes.length;
     this.switchTheme(themes[nextIndex]);
+  }
+
+  /**
+   * Toggle to the next theme in the cycle
+   * Cycles through classic → modern → minimalist → classic
+   */
+  toggleTheme(): void {
+    this.cycleTheme();
   }
   
   /**

@@ -2,6 +2,8 @@ import type { ResumeData, Skills, SkillCategory } from './types.js'
 import type { ResumeThemeConfig } from './resume-themes.js'
 import { prepareWithSegments, layoutWithLines, type PreparedTextWithSegments } from '@chenglou/pretext'
 
+export type { ResumeData }
+
 export type ResumeLayoutConfig = {
   pageWidth: number
   pageHeight: number
