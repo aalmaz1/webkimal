@@ -1,61 +1,67 @@
+/**
+ * Resume Builder for Pretext Engine
+ *
+ * Provides functions to render structured resume data into DOM elements
+ * using the Pretext layout engine for precise text measurement.
+ */
+
 import type { ResumeData, Skills, SkillCategory } from './types.js'
-import type { ResumeThemeConfig } from './resume-themes.js'
-import { prepareWithSegments, layoutWithLines, type PreparedTextWithSegments } from '@chenglou/pretext'
+import { prepareWithSegments, layoutWithLines, type PreparedTextWithSegments, type LayoutLine as PretextLayoutLine } from '@chenglou/pretext'
 
 export type { ResumeData }
 
-export type ResumeLayoutConfig = {
-  pageWidth: number
-  pageHeight: number
-  marginLeft: number
-  marginRight: number
-  marginTop: number
-  marginBottom: number
-  nameFont: string
-  sectionTitleFont: string
-  bodyFont: string
-  subsectionFont: string
-  lineHeight: number
-  sectionSpacing: number
-  entrySpacing: number
-  highlightIndent: number
-  theme?: string
-  themeConfig?: ResumeThemeConfig
+/**
+ * A positioned block representing a laid-out text element on the page.
+ * Used for precise text measurement and positioning.
+ */
+export type PositionedBlock = {
+  x: number
+  y: number
+  width: number
+  lines: PretextLayoutLine[]
+  type: 'name' | 'title' | 'contact' | 'section' | 'entry' | 'summary' | 'skill'
 }
 
-export const DEFAULT_LAYOUT_CONFIG: ResumeLayoutConfig = {
-  pageWidth: 816,
-  pageHeight: 1056,
-  marginLeft: 48,
-  marginRight: 48,
-  marginTop: 48,
-  marginBottom: 48,
-  nameFont: 'bold 24px "Helvetica Neue", Helvetica, Arial, sans-serif',
-  sectionTitleFont: 'bold 14px "Helvetica Neue", Helvetica, Arial, sans-serif',
-  bodyFont: '400 11px "Helvetica Neue", Helvetica, Arial, sans-serif',
-  subsectionFont: 'bold 11px "Helvetica Neue", Helvetica, Arial, sans-serif',
-  lineHeight: 18,
-  sectionSpacing: 24,
-  entrySpacing: 14,
-  highlightIndent: 16,
+/**
+ * An augmented layout line with styling information for rendering.
+ */
+export type LayoutLine = {
+  text: string
+  width: number
+  fontFamily: string
+  fontSize: number
+  fontWeight: number | string
+  color: string
 }
 
-export function buildThemeLayoutConfig(
-  themeConfig: ResumeThemeConfig,
-  baseConfig: ResumeLayoutConfig = DEFAULT_LAYOUT_CONFIG,
-): ResumeLayoutConfig {
-  return {
-    ...baseConfig,
-    themeConfig,
-    nameFont: `bold ${themeConfig.nameFontSize} ${themeConfig.nameFont}`,
-    sectionTitleFont: `bold ${themeConfig.sectionTitleFontSize} ${themeConfig.sectionTitleFont}`,
-    bodyFont: `${themeConfig.bodyFontWeight} ${themeConfig.bodyFontSize} ${themeConfig.bodyFont}`,
-    subsectionFont: `bold ${themeConfig.subsectionFontSize} ${themeConfig.subsectionFont}`,
-    sectionSpacing: themeConfig.sectionSpacing,
-    entrySpacing: themeConfig.entrySpacing,
-    highlightIndent: themeConfig.highlightIndent,
-  }
+/**
+ * Create a PositionedBlock with the given parameters.
+ */
+export function createPositionedBlock(
+  type: PositionedBlock['type'],
+  x: number,
+  y: number,
+  width: number,
+  lines: PretextLayoutLine[],
+): PositionedBlock {
+  return { type, x, y, width, lines }
 }
+
+/**
+ * Create a LayoutLine with styling information.
+ */
+export function createLayoutLine(
+  text: string,
+  width: number,
+  fontFamily: string,
+  fontSize: number,
+  fontWeight: number | string,
+  color: string,
+): LayoutLine {
+  return { text, width, fontFamily, fontSize, fontWeight, color }
+}
+
+// ── Internal helpers ──────────────────────────────────────────────────────────
 
 function prepareText(text: string, font: string): PreparedTextWithSegments {
   return prepareWithSegments(text, font)
@@ -106,7 +112,13 @@ function createSection(title: string): HTMLElement {
   return section
 }
 
-function createEntry(title: string, subtitle: string | undefined, meta: string | undefined, highlights: string[] | undefined, config: ResumeLayoutConfig): HTMLElement {
+function createEntry(
+  title: string,
+  subtitle: string | undefined,
+  meta: string | undefined,
+  highlights: string[] | undefined,
+  entrySpacing: number,
+): HTMLElement {
   const entry = createBlock('div', 'resume-entry')
   entry.appendChild(createBlock('div', 'entry-title', title))
   if (subtitle) {
@@ -126,18 +138,18 @@ function createEntry(title: string, subtitle: string | undefined, meta: string |
     })
     entry.appendChild(list)
   }
-  entry.style.marginBottom = `${config.entrySpacing}px`
+  entry.style.marginBottom = `${entrySpacing}px`
   return entry
 }
 
-function createSkillSection(skills: Skills, config: ResumeLayoutConfig): HTMLElement {
+function createSkillSection(skills: Skills): HTMLElement {
   const section = createSection('Skills')
   const content = createBlock('div', 'skills-content')
-  if (!skills.length) return section
+  if (!Array.isArray(skills) || !skills.length) return section
   if (typeof skills[0] === 'string') {
     content.appendChild(createBlock('div', 'skills-row', (skills as string[]).join(' · ')))
   } else {
-    ;(skills as SkillCategory[]).forEach((category) => {
+    (skills as SkillCategory[]).forEach((category) => {
       const group = createBlock('div', 'skill-category')
       group.appendChild(createBlock('div', 'skill-category-title', category.category))
       group.appendChild(createBlock('div', 'skill-category-list', category.skills.join(' · ')))
@@ -148,44 +160,101 @@ function createSkillSection(skills: Skills, config: ResumeLayoutConfig): HTMLEle
   return section
 }
 
-export function renderResume(data: ResumeData, container: HTMLElement, config: ResumeLayoutConfig = DEFAULT_LAYOUT_CONFIG): void {
+// ── CSS variable helpers ──────────────────────────────────────────────────────
+
+function readCssVar(style: CSSStyleDeclaration, name: string, fallback: string): string {
+  return style.getPropertyValue(`--resume-${name}`).trim() || fallback
+}
+
+function readCssVarPx(style: CSSStyleDeclaration, name: string, fallback: number): number {
+  const val = readCssVar(style, name, `${fallback}px`)
+  return parseInt(val, 10) || fallback
+}
+
+function readCssVarNum(style: CSSStyleDeclaration, name: string, fallback: number): number {
+  const val = readCssVar(style, name, `${fallback}`)
+  return parseFloat(val) || fallback
+}
+
+function buildFontShorthand(style: CSSStyleDeclaration, prefix: string): string {
+  const weight = readCssVar(style, `${prefix}-font-weight`, '400')
+  const size = readCssVar(style, `${prefix}-font-size`, '11px')
+  const family = readCssVar(style, `${prefix}-font`, '"Helvetica Neue", Helvetica, Arial, sans-serif')
+  return `${weight} ${size} ${family}`
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
+/**
+ * Render resume data into a container element using CSS custom properties
+ * for all styling values.
+ *
+ * @param data   - The resume data to render
+ * @param container - The DOM element to render into
+ */
+export function renderResume(data: ResumeData, container: HTMLElement): void {
+  if (!data) return
+  if (!container) throw new Error('renderResume: container is required')
+
   container.innerHTML = ''
   container.classList.add('resume-container')
-  container.style.padding = `${config.marginTop}px ${config.marginRight}px ${config.marginBottom}px ${config.marginLeft}px`
-  container.style.maxWidth = `${config.pageWidth}px`
+
+  const style = getComputedStyle(container)
+
+  const marginX = readCssVarPx(style, 'margin-x', 48)
+  const marginY = readCssVarPx(style, 'margin-y', 48)
+  const pageWidth = readCssVarPx(style, 'page-width', 816)
+  const lineHeight = readCssVarNum(style, 'body-line-height', 1.5) * readCssVarPx(style, 'body-font-size', 11)
+  const sectionSpacing = readCssVarPx(style, 'section-spacing', 24)
+  const entrySpacing = readCssVarPx(style, 'entry-spacing', 14)
+
+  const nameFont = buildFontShorthand(style, 'name')
+  const subsectionFont = buildFontShorthand(style, 'subsection')
+  const bodyFont = buildFontShorthand(style, 'body')
+
+  container.style.padding = `${marginY}px ${marginX}px ${marginY}px ${marginX}px`
+  container.style.maxWidth = `${pageWidth}px`
   container.style.boxSizing = 'border-box'
 
   const { personal, summary, experience, education, skills } = data
 
+  // Header
   const header = createBlock('header', 'resume-header')
-  const nameElement = createBlock('div', 'resume-name', personal.name)
-  nameElement.style.font = config.nameFont
+  const nameElement = createBlock('div', 'resume-name', personal?.name)
+  nameElement.style.font = nameFont
   header.appendChild(nameElement)
 
-  if (personal.title) {
+  if (personal?.title) {
     const titleElement = createBlock('div', 'resume-title', personal.title)
-    titleElement.style.font = config.subsectionFont
+    titleElement.style.font = subsectionFont
     header.appendChild(titleElement)
   }
 
-  const contactLine = buildContactLine(personal)
-  if (contactLine) {
-    const contactElement = createBlock('div', 'resume-contact', contactLine)
-    contactElement.style.font = config.bodyFont
-    header.appendChild(contactElement)
+  if (personal) {
+    const contactLine = buildContactLine(personal)
+    if (contactLine) {
+      const contactElement = createBlock('div', 'resume-contact', contactLine)
+      contactElement.style.font = bodyFont
+      header.appendChild(contactElement)
+    }
   }
 
   container.appendChild(header)
 
+  // Summary
   if (summary) {
     const summarySection = createSection('Professional Summary')
-    summarySection.appendChild(createParagraph(summary, config.bodyFont, config.pageWidth - config.marginLeft - config.marginRight, config.lineHeight, 'resume-summary'))
+    summarySection.appendChild(
+      createParagraph(summary, bodyFont, pageWidth - marginX * 2, lineHeight, 'resume-summary'),
+    )
     container.appendChild(summarySection)
   }
 
+  // Experience
   if (experience?.length) {
     const experienceSection = createSection('Experience')
     experience.forEach((item) => {
+      if (!item) return
       const heading = `${item.role} · ${item.company}`
       const metaParts: string[] = []
       if (item.startDate) {
@@ -197,14 +266,16 @@ export function renderResume(data: ResumeData, container: HTMLElement, config: R
         }
       }
       const meta = metaParts.length ? metaParts.join(' – ') : undefined
-      experienceSection.appendChild(createEntry(heading, item.location, meta, item.highlights, config))
+      experienceSection.appendChild(createEntry(heading, item.location, meta, item.highlights, entrySpacing))
     })
     container.appendChild(experienceSection)
   }
 
+  // Education
   if (education?.length) {
     const educationSection = createSection('Education')
     education.forEach((item) => {
+      if (!item) return
       const heading = `${item.degree} · ${item.institution}`
       const metaParts: string[] = []
       if (item.startDate) {
@@ -213,12 +284,13 @@ export function renderResume(data: ResumeData, container: HTMLElement, config: R
       }
       if (item.gpa) metaParts.push(`GPA ${item.gpa}`)
       const meta = metaParts.length ? metaParts.join(' • ') : undefined
-      educationSection.appendChild(createEntry(heading, item.location, meta, item.highlights, config))
+      educationSection.appendChild(createEntry(heading, item.location, meta, item.highlights, entrySpacing))
     })
     container.appendChild(educationSection)
   }
 
+  // Skills
   if (skills?.length) {
-    container.appendChild(createSkillSection(skills, config))
+    container.appendChild(createSkillSection(skills))
   }
 }

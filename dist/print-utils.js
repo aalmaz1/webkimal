@@ -1,170 +1,380 @@
 /**
  * Print Utilities Module
- * Handles print-to-PDF functionality with optimized @media print styles
+ *
+ * Handles print-to-PDF functionality with optimized @media print styles.
+ * Consolidated with the richer print support from resume-print.ts.
  */
-const DEFAULT_PRINT_OPTIONS = {
-    enableBackgrounds: true,
-    scale: 1,
-    margins: '0'
-};
+import { injectThemeStyles, getCurrentTheme, applyTheme } from './resume-themes.js';
+// ============================================================================
+// Print CSS Styles
+// ============================================================================
+export const PRINT_CSS = `
+/* ============================================================================
+   Print Styles for Resume Builder
+   Optimized for A4 paper format
+   ============================================================================ */
+
+@media print {
+  /* Page setup for A4 */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide UI elements that shouldn't appear in print */
+  .theme-switcher,
+  .theme-switcher *,
+  [data-theme-switcher],
+  [data-theme-switcher] *,
+  .no-print,
+  .no-print *,
+  nav,
+  navigation,
+  .navigation,
+  .nav-buttons,
+  .btn-print,
+  button,
+  input,
+  select,
+  textarea,
+  .controls,
+  .toolbar,
+  header:not(.resume-header),
+  footer:not(.resume-footer),
+  aside,
+  .sidebar,
+  .modal,
+  .dialog,
+  .popup {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+  }
+
+  /* Reset body margins for print */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure resume container is properly sized and centered */
+  .resume-container,
+  #resume-container,
+  .resume,
+  #resume,
+  .resume-content,
+  #resume-content {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 auto !important;
+    padding: 15mm !important;
+    box-shadow: none !important;
+    background: white !important;
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
+    float: none !important;
+    clear: both !important;
+    page-break-after: always !important;
+  }
+
+  /* Ensure text is readable in print */
+  .resume-container *,
+  #resume-container * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Prevent content from breaking awkwardly */
+  .resume-section,
+  .resume-entry,
+  .resume-block {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Force section titles to stay with their content */
+  .resume-section-title {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Ensure links are visible (optional: show URLs) */
+  a[href]:after {
+    content: "" !important;
+  }
+
+  /* Remove hover effects */
+  *:hover {
+    background: transparent !important;
+  }
+
+  /* Ensure images scale properly */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Force background graphics for gradients and colored sections */
+  .resume-section-bg,
+  [style*="background"] {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Screen-specific adjustments when preparing for print */
+.print-preview-mode {
+  .theme-switcher,
+  .controls,
+  .toolbar {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+}
+`;
 /**
- * Injects print-specific CSS styles into the document
+ * Inject print CSS into the document.
+ * Idempotent — only injects once.
  */
-function injectPrintStyles() {
-    const existingStyle = document.getElementById('print-styles');
-    if (existingStyle) {
-        return; // Already injected
-    }
-    const style = document.createElement('style');
-    style.id = 'print-styles';
-    style.media = 'print';
-    style.textContent = `
-        @media print {
-            /* Page setup for A4 */
-            @page {
-                size: A4;
-                margin: 0;
-            }
-
-            /* Hide UI elements */
-            .controls,
-            .theme-switcher,
-            .no-print,
-            button,
-            select,
-            input,
-            nav,
-            header:not(.resume-header) {
-                display: none !important;
-            }
-
-            /* Body reset for print */
-            body {
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-            }
-
-            /* Resume container optimization */
-            #resume-container,
-            .resume-container {
-                width: 100% !important;
-                max-width: none !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 20mm !important;
-                page-break-after: always;
-            }
-
-            /* Ensure colors print correctly */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
-
-            /* Prevent content from splitting awkwardly */
-            .section,
-            .entry {
-                page-break-inside: avoid;
-                break-inside: avoid;
-            }
-
-            /* Typography optimization for print */
-            body {
-                font-size: 11pt;
-                line-height: 1.4;
-            }
-
-            /* Links should show URLs or be plain text */
-            a[href]:after {
-                content: none !important;
-            }
-
-            /* Remove hover effects */
-            *:hover {
-                background: transparent !important;
-            }
-        }
-    `;
-    document.head.appendChild(style);
+export function injectPrintStyles() {
+    if (typeof document === 'undefined')
+        return;
+    const existingStyle = document.getElementById('resume-print-styles');
+    if (existingStyle)
+        return;
+    const styleElement = document.createElement('style');
+    styleElement.id = 'resume-print-styles';
+    styleElement.setAttribute('media', 'print, screen');
+    styleElement.textContent = PRINT_CSS;
+    document.head.appendChild(styleElement);
 }
 /**
- * Triggers the browser's native print dialog
- * Ensures current theme styles are preserved
- */
-export function printResume(options = DEFAULT_PRINT_OPTIONS) {
-    // Inject print styles if not already present
-    injectPrintStyles();
-    // Wait for any pending DOM updates
-    requestAnimationFrame(() => {
-        // Before print event (optional logging)
-        console.log('🖨️ Preparing document for print...');
-        // Trigger print dialog
-        try {
-            window.print();
-            console.log('✅ Print dialog opened successfully');
-        }
-        catch (error) {
-            console.error('❌ Error opening print dialog:', error);
-            // Fallback: Show user instructions
-            alert('Print dialog could not be opened automatically. Please use Ctrl+P (Cmd+P on Mac) to print.');
-        }
-        // After print event handling
-        window.addEventListener('afterprint', () => {
-            console.log('📄 Print operation completed');
-        }, { once: true });
-    });
-}
-/**
- * Validates if print is supported in current environment
+ * Check whether print is supported in the current environment.
  */
 export function isPrintSupported() {
     return typeof window !== 'undefined' && typeof window.print === 'function';
 }
 /**
- * Generates a PDF-friendly version of the resume
- * Note: This uses browser's native print-to-PDF
- * For server-side PDF generation, consider using Puppeteer or similar
+ * Validate that a container has rendered children before printing.
+ * Returns true if the container is valid for printing.
+ */
+export function validatePrintContainer(container) {
+    if (typeof document === 'undefined' || typeof window === 'undefined')
+        return false;
+    let element = null;
+    if (!container) {
+        element = document.querySelector('.resume-container, #resume-container');
+    }
+    else if (typeof container === 'string') {
+        element = document.querySelector(container);
+    }
+    else {
+        element = container;
+    }
+    if (!element) {
+        console.warn('Print: resume container not found');
+        return false;
+    }
+    if (element.children.length === 0) {
+        console.warn('Print: resume container has no children — nothing to print');
+        return false;
+    }
+    return true;
+}
+/**
+ * Triggers the browser's native print dialog with proper theme support.
+ *
+ * @param options - Optional configuration for print behavior
+ *
+ * @example
+ * // Basic usage
+ * printResume()
+ *
+ * @example
+ * // With callbacks
+ * printResume({
+ *   onBeforePrint: () => console.log('Preparing to print...'),
+ *   onAfterPrint: () => console.log('Print completed or cancelled')
+ * })
+ */
+export function printResume(options = {}) {
+    const { onBeforePrint, onAfterPrint, injectStyles = true, theme, container, } = options;
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+        console.warn('printResume() requires a browser environment');
+        return;
+    }
+    // Validate container before printing
+    if (!validatePrintContainer(container)) {
+        console.warn('Print validation failed — aborting print');
+        return;
+    }
+    // Inject styles if requested
+    if (injectStyles) {
+        injectPrintStyles();
+        injectThemeStyles();
+    }
+    // Resolve container element
+    let containerElement = null;
+    if (container) {
+        if (typeof container === 'string') {
+            containerElement = document.querySelector(container);
+        }
+        else {
+            containerElement = container;
+        }
+    }
+    // Store current theme to restore after printing
+    const previousTheme = getCurrentTheme(containerElement || undefined);
+    // Apply specified theme if provided
+    if (theme && ['classic', 'modern', 'minimalist'].includes(theme)) {
+        applyTheme(theme, containerElement || undefined);
+    }
+    // Execute before print callback
+    if (onBeforePrint) {
+        onBeforePrint();
+    }
+    // Add a small delay to ensure styles are applied
+    setTimeout(() => {
+        try {
+            window.print();
+        }
+        catch (error) {
+            console.error('Error triggering print dialog:', error);
+            alert('Print dialog could not be opened automatically. Please use Ctrl+P (Cmd+P on Mac) to print.');
+        }
+        finally {
+            if (onAfterPrint) {
+                onAfterPrint();
+            }
+            if (theme && theme !== previousTheme) {
+                setTimeout(() => {
+                    applyTheme(previousTheme, containerElement || undefined);
+                }, 100);
+            }
+        }
+    }, 50);
+    window.addEventListener('afterprint', () => {
+        console.log('Print operation completed');
+    }, { once: true });
+}
+/**
+ * Prepares the resume for print preview mode without opening the dialog.
+ * Useful for showing users how their resume will look when printed.
+ *
+ * @param enable  - Whether to enable or disable preview mode
+ * @param container - Container element or selector
+ */
+export function setPrintPreviewMode(enable, container) {
+    if (typeof document === 'undefined')
+        return;
+    let containerElement = null;
+    if (container) {
+        if (typeof container === 'string') {
+            containerElement = document.querySelector(container);
+        }
+        else {
+            containerElement = container;
+        }
+    }
+    const target = containerElement || document.body;
+    if (enable) {
+        target.classList.add('print-preview-mode');
+    }
+    else {
+        target.classList.remove('print-preview-mode');
+    }
+}
+/**
+ * Creates a print-ready version of the resume by cloning and styling it.
+ * Returns the cloned element which can be used for custom print workflows.
+ *
+ * @param container - Source container element or selector
+ * @param theme     - Optional theme to apply
+ * @returns Cloned and styled resume element, or null if not found
+ */
+export function createPrintReadyClone(container, theme) {
+    if (typeof document === 'undefined')
+        return null;
+    let sourceElement = null;
+    if (typeof container === 'string') {
+        sourceElement = document.querySelector(container);
+    }
+    else {
+        sourceElement = container;
+    }
+    if (!sourceElement) {
+        console.warn('Source container not found');
+        return null;
+    }
+    const clone = sourceElement.cloneNode(true);
+    clone.style.width = '210mm';
+    clone.style.minHeight = '297mm';
+    clone.style.margin = '0';
+    clone.style.padding = '15mm';
+    clone.style.background = 'white';
+    clone.style.boxShadow = 'none';
+    if (theme && ['classic', 'modern', 'minimalist'].includes(theme)) {
+        clone.classList.add(`resume-theme-${theme}`);
+        clone.setAttribute('data-resume-theme', theme);
+    }
+    return clone;
+}
+/**
+ * Initialize all print-related styles and utilities.
+ * Call this once during application startup.
+ */
+export function initializePrintSupport() {
+    injectPrintStyles();
+    injectThemeStyles();
+}
+/**
+ * Prepares the document for printing by applying print-specific classes.
+ */
+export function prepareForPrint() {
+    if (typeof document === 'undefined')
+        return;
+    document.body.classList.add('printing');
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+        img.setAttribute('loading', 'eager');
+    });
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+            console.log('All fonts loaded for print');
+        });
+    }
+}
+/**
+ * Cleans up after print operation.
+ */
+export function cleanupAfterPrint() {
+    if (typeof document === 'undefined')
+        return;
+    document.body.classList.remove('printing');
+}
+/**
+ * Generates a PDF-friendly version of the resume using the browser's
+ * native print-to-PDF workflow.
  */
 export async function generatePDF(filename = 'resume.pdf') {
     if (!isPrintSupported()) {
         throw new Error('Print functionality is not supported in this environment');
     }
-    console.log(`📝 Generating PDF: ${filename}`);
-    // Note: Browser security prevents automatic PDF download without user interaction
-    // The print dialog must be triggered by user action
+    console.log(`Generating PDF: ${filename}`);
     printResume();
-    // Inform user about manual save step
-    console.log('ℹ️ In the print dialog, select "Save as PDF" as the destination');
-}
-/**
- * Prepares the document for printing by applying print-specific classes
- */
-export function prepareForPrint() {
-    document.body.classList.add('printing');
-    // Add print-specific attributes to images
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        img.setAttribute('loading', 'eager');
-    });
-    // Ensure all fonts are loaded
-    if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => {
-            console.log('✅ All fonts loaded for print');
-        });
-    }
-}
-/**
- * Cleans up after print operation
- */
-export function cleanupAfterPrint() {
-    document.body.classList.remove('printing');
-    console.log('🧹 Print cleanup completed');
-}
-// Auto-inject print styles on module load
-if (typeof document !== 'undefined') {
-    injectPrintStyles();
+    console.log('In the print dialog, select "Save as PDF" as the destination');
 }
 //# sourceMappingURL=print-utils.js.map

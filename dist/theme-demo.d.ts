@@ -1,24 +1,25 @@
 /**
  * Theme Switcher Demo for Resume Builder
  *
- * This example demonstrates how to use the ThemeSwitcher class
- * to dynamically switch between Classic, Modern, and Minimalist themes.
+ * Demonstrates how to use the ThemeSwitcher class with the refactored
+ * 2-parameter renderResume(data, container) API.
  */
-import { type ResumeThemeName } from './resume-themes';
-import type { ResumeData } from './resume-builder';
-declare const sampleResume: ResumeData;
-export declare function demoBasicThemeSwitcher(): void;
-export declare function demoDirectThemeConfig(): void;
-export declare function demoDynamicThemeSwitching(): void;
-export declare function demoCustomThemeOverride(): void;
+import { type ResumeThemeName } from './resume-themes.js';
+import type { ResumeData } from './types.js';
+export declare const sampleResume: ResumeData;
 /**
- * Example hook/component pattern for framework integration
- * This would be used in a browser environment
+ * Demonstrates theme switching with a container element.
+ * Creates a ThemeSwitcher, renders the resume, and cycles themes.
+ */
+export declare function demoThemeSwitching(container?: HTMLElement): void;
+/**
+ * Example class for framework integration (React, Vue, etc.)
+ * Uses the refactored 2-parameter renderResume API.
  */
 export declare class ResumeViewerWithTheme {
     private switcher;
     private container;
-    private currentBlocks;
+    private currentData;
     constructor(containerId?: string);
     /**
      * Set resume data and render with current theme
@@ -33,17 +34,10 @@ export declare class ResumeViewerWithTheme {
      */
     toggleTheme(): void;
     /**
-     * Render blocks to DOM (placeholder - actual implementation depends on your rendering pipeline)
+     * Render data to DOM using 2-parameter API
      */
     private render;
-    /**
-     * Get current theme
-     */
     getCurrentTheme(): ResumeThemeName;
-    /**
-     * Subscribe to theme changes
-     */
     onThemeChange(callback: (theme: ResumeThemeName) => void): () => void;
 }
-export { sampleResume };
 //# sourceMappingURL=theme-demo.d.ts.map

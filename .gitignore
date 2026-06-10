@@ -1,6 +1,8 @@
-```
 # Dependencies
 node_modules/
+
+# Build output
+dist/
 
 # Logs and temp files
 *.log
@@ -23,7 +25,3 @@ __pycache__/
 .Python
 venv/
 .venv/
-.env
-.env.local
-.env.*
-```

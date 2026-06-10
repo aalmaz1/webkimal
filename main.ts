@@ -1,4 +1,4 @@
-import { renderResume, buildThemeLayoutConfig } from './resume-builder.js'
+import { renderResume } from './resume-builder.js'
 import { ThemeSwitcher, type ResumeThemeName } from './resume-themes.js'
 import { printResume } from './print-utils.js'
 import type { ResumeData } from './types.js'
@@ -122,9 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const renderCurrentResume = (): void => {
-    const themeConfig = themeSwitcher.getThemeConfig()
-    const layoutConfig = buildThemeLayoutConfig(themeConfig)
-    renderResume(sampleResumeData, container, layoutConfig)
+    renderResume(sampleResumeData, container)
   }
 
   renderCurrentResume()
