@@ -13,19 +13,19 @@ import {
   injectThemeStyles,
   applyTheme,
 } from './resume-themes.js'
-import type { ResumeData } from './resume-builder.js'
+import type { ResumeData } from './types.js'
 
 // ============================================================================
 // Sample Resume Data
 // ============================================================================
 
 const sampleResume: ResumeData = {
-  name: 'Alex Johnson',
-  contact: {
+  personal: {
+    name: 'Alex Johnson',
+    title: 'Software Engineer',
     email: 'alex.johnson@email.com',
     phone: '(555) 123-4567',
     location: 'San Francisco, CA',
-    website: 'https://alexjohnson.dev',
     linkedin: 'https://linkedin.com/in/alexjohnson',
     github: 'https://github.com/alexjohnson',
   },
@@ -33,7 +33,7 @@ const sampleResume: ResumeData = {
   experience: [
     {
       company: 'TechCorp Inc.',
-      position: 'Senior Software Engineer',
+      role: 'Senior Software Engineer',
       location: 'San Francisco, CA',
       startDate: '2020-01',
       current: true,
@@ -45,7 +45,7 @@ const sampleResume: ResumeData = {
     },
     {
       company: 'StartupXYZ',
-      position: 'Software Engineer',
+      role: 'Software Engineer',
       location: 'San Francisco, CA',
       startDate: '2017-06',
       endDate: '2019-12',
@@ -88,34 +88,32 @@ const sampleResume: ResumeData = {
 
 export function demoBasicThemeSwitcher(): void {
   console.log('=== Basic Theme Switcher Demo ===\n')
-  
+
   // Create theme switcher (auto-initializes with Classic theme)
   const switcher = createThemeSwitcher()
-  
+
   // Subscribe to theme changes
   const unsubscribe = switcher.onThemeChange((theme) => {
     console.log(`Theme changed to: ${theme}`)
   })
-  
+
   // Render with current theme
-  let blocks = renderResume(sampleResume, {
-    ...DEFAULT_LAYOUT_CONFIG,
-    theme: switcher.getTheme(),
-  })
-  console.log(`Rendered ${blocks.length} blocks with ${switcher.getTheme()} theme\n`)
-  
+  const container1 = document.createElement('div')
+  const layout1 = buildThemeLayoutConfig(THEME_CONFIGS[switcher.getTheme()])
+  renderResume(sampleResume, container1, layout1)
+  console.log(`Rendered resume with ${switcher.getTheme()} theme\n`)
+
   // Toggle to Modern theme
   switcher.switchTheme('modern')
-  blocks = renderResume(sampleResume, {
-    ...DEFAULT_LAYOUT_CONFIG,
-    theme: 'modern',
-  })
-  console.log(`Rendered ${blocks.length} blocks with modern theme\n`)
-  
+  const container2 = document.createElement('div')
+  const layout2 = buildThemeLayoutConfig(THEME_CONFIGS.modern)
+  renderResume(sampleResume, container2, layout2)
+  console.log(`Rendered resume with modern theme\n`)
+
   // Cycle through all themes
   switcher.cycleTheme() // Now minimalist
   console.log(`Current theme: ${switcher.getTheme()}\n`)
-  
+
   // Cleanup
   unsubscribe()
 }
@@ -126,22 +124,23 @@ export function demoBasicThemeSwitcher(): void {
 
 export function demoDirectThemeConfig(): void {
   console.log('=== Direct Theme Configuration Demo ===\n')
-  
+
   // Get Modern theme config
   const creativeConfig = THEME_CONFIGS.modern
-  
+
   // Build layout config from theme
   const layoutConfig = buildThemeLayoutConfig(creativeConfig)
-  
+
   console.log('Modern Theme Layout Config:')
   console.log(`  Name Font: ${layoutConfig.nameFont}`)
   console.log(`  Section Spacing: ${layoutConfig.sectionSpacing}px`)
   console.log(`  Entry Spacing: ${layoutConfig.entrySpacing}px`)
   console.log(`  Highlight Indent: ${layoutConfig.highlightIndent}px\n`)
-  
+
   // Render with theme config
-  const blocks = renderResume(sampleResume, layoutConfig)
-  console.log(`Rendered ${blocks.length} blocks with direct theme config\n`)
+  const container = document.createElement('div')
+  renderResume(sampleResume, container, layoutConfig)
+  console.log(`Rendered resume with direct theme config\n`)
 }
 
 // ============================================================================
@@ -150,20 +149,19 @@ export function demoDirectThemeConfig(): void {
 
 export function demoDynamicThemeSwitching(): void {
   console.log('=== Dynamic Theme Switching Demo ===\n')
-  
+
   const themes: ResumeThemeName[] = ['classic', 'modern', 'minimalist']
-  
+
   for (const theme of themes) {
     console.log(`Rendering with ${theme.toUpperCase()} theme:`)
-    
-    const blocks = renderResume(sampleResume, {
-      ...DEFAULT_LAYOUT_CONFIG,
-      theme: theme,
-    })
-    
-    console.log(`  - Total blocks: ${blocks.length}`)
-    console.log(`  - First block Y: ${blocks[0]?.y}px`)
-    console.log(`  - Last block Y: ${blocks[blocks.length - 1]?.y}px\n`)
+
+    const container = document.createElement('div')
+    const layout = buildThemeLayoutConfig(THEME_CONFIGS[theme])
+    renderResume(sampleResume, container, layout)
+
+    console.log(`  - Theme name: ${theme}`)
+    console.log(`  - Name font: ${layout.nameFont}`)
+    console.log(`  - Section spacing: ${layout.sectionSpacing}px\n`)
   }
 }
 
@@ -173,10 +171,10 @@ export function demoDynamicThemeSwitching(): void {
 
 export function demoCustomThemeOverride(): void {
   console.log('=== Custom Theme Override Demo ===\n')
-  
+
   // Start with classic theme
   const baseConfig = THEME_CONFIGS.classic
-  
+
   // Override specific properties
   const customConfig = {
     ...baseConfig,
@@ -185,16 +183,17 @@ export function demoCustomThemeOverride(): void {
     entrySpacing: 16,
     nameFontSize: '32px',
   }
-  
+
   const layoutConfig = buildThemeLayoutConfig(customConfig)
-  
+
   console.log('Custom Theme Overrides:')
   console.log(`  Accent Color: ${customConfig.accentColor}`)
   console.log(`  Section Spacing: ${customConfig.sectionSpacing}px`)
   console.log(`  Name Font Size: ${customConfig.nameFontSize}\n`)
-  
-  const blocks = renderResume(sampleResume, layoutConfig)
-  console.log(`Rendered ${blocks.length} blocks with custom theme\n`)
+
+  const container = document.createElement('div')
+  renderResume(sampleResume, container, layoutConfig)
+  console.log(`Rendered resume with custom theme\n`)
 }
 
 // ============================================================================
@@ -208,43 +207,31 @@ export function demoCustomThemeOverride(): void {
 export class ResumeViewerWithTheme {
   private switcher: ReturnType<typeof createThemeSwitcher>
   private container: HTMLElement | null = null
-  private currentBlocks: any[] = []
-  
+  private currentData: ResumeData | null = null
+
   constructor(containerId?: string) {
     if (typeof document !== 'undefined' && containerId) {
       this.container = document.getElementById(containerId)
     }
     this.switcher = createThemeSwitcher(this.container || undefined)
   }
-  
+
   /**
    * Set resume data and render with current theme
    */
   setResumeData(data: ResumeData): void {
-    this.currentBlocks = renderResume(data, {
-      ...DEFAULT_LAYOUT_CONFIG,
-      theme: this.switcher.getTheme(),
-    })
+    this.currentData = data
     this.render()
   }
-  
+
   /**
    * Switch theme and re-render
    */
   switchTheme(theme: ResumeThemeName): void {
     this.switcher.switchTheme(theme)
-    // Re-render with new theme
-    this.currentBlocks = renderResume(
-      // In real app, you'd store the resume data
-      sampleResume,
-      {
-        ...DEFAULT_LAYOUT_CONFIG,
-        theme: this.switcher.getTheme(),
-      }
-    )
     this.render()
   }
-  
+
   /**
    * Toggle between Classic and Modern
    */
@@ -252,26 +239,27 @@ export class ResumeViewerWithTheme {
     this.switcher.togglePrimaryThemes()
     this.render()
   }
-  
+
   /**
-   * Render blocks to DOM (placeholder - actual implementation depends on your rendering pipeline)
+   * Render data to DOM
    */
   private render(): void {
-    console.log(`Rendering ${this.currentBlocks.length} blocks`)
-    // In a real implementation, you would:
-    // 1. Clear container
-    // 2. Create elements for each block
-    // 3. Position them based on x/y coordinates
-    // 4. Apply CSS variables from current theme
+    if (!this.container || !this.currentData) {
+      console.log('Cannot render resume: missing container or data')
+      return
+    }
+    const layoutConfig = buildThemeLayoutConfig(THEME_CONFIGS[this.switcher.getTheme()])
+    renderResume(this.currentData, this.container, layoutConfig)
+    console.log(`Rendered resume with ${this.switcher.getTheme()} theme`)
   }
-  
+
   /**
    * Get current theme
    */
   getCurrentTheme(): ResumeThemeName {
     return this.switcher.getTheme()
   }
-  
+
   /**
    * Subscribe to theme changes
    */
@@ -291,28 +279,32 @@ export class ResumeViewerWithTheme {
 function runDemosIfNode(): void {
   // Type-safe check for Node.js environment
   const globalObj = typeof globalThis !== 'undefined' ? globalThis : window as any
-  
+
   if (globalObj.process?.versions?.node && globalObj.require?.main === globalObj.module) {
     console.log('Running Resume Theme Switcher Demos\n')
     console.log('='.repeat(50))
     console.log()
-    
+
+    // Demos require DOM API; log a note when not in browser
+    console.log('Note: These demos require a browser environment with DOM APIs.')
+    console.log('The demos will not render visible output in a Node.js environment.\n')
+
     demoBasicThemeSwitcher()
     console.log('='.repeat(50))
     console.log()
-    
+
     demoDirectThemeConfig()
     console.log('='.repeat(50))
     console.log()
-    
+
     demoDynamicThemeSwitching()
     console.log('='.repeat(50))
     console.log()
-    
+
     demoCustomThemeOverride()
     console.log('='.repeat(50))
     console.log()
-    
+
     console.log('All demos completed!')
   }
 }

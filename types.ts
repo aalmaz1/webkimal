@@ -33,6 +33,7 @@ export interface EducationItem {
   endDate?: string
   location?: string
   description?: string
+  gpa?: string
   highlights?: string[]
 }
 
