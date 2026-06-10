@@ -3,6 +3,8 @@
  * 
  * This module provides a function to render resume data using the Pretext layout engine.
  * It maps structured resume JSON data into Pretext layout elements.
+ * 
+ * Supports theme switching via CSS variables and theme configurations.
  */
 
 import {
@@ -14,6 +16,12 @@ import {
   type LayoutLine,
   type PrepareOptions,
 } from '@chenglou/pretext'
+
+import {
+  type ResumeThemeName,
+  type ResumeThemeConfig,
+  THEME_CONFIGS,
+} from './resume-themes'
 
 // ============================================================================
 // Resume Data Types
@@ -76,6 +84,8 @@ export type ResumeLayoutConfig = {
   sectionSpacing: number
   entrySpacing: number
   highlightIndent: number
+  theme?: ResumeThemeName
+  themeConfig?: ResumeThemeConfig
 }
 
 export const DEFAULT_LAYOUT_CONFIG: ResumeLayoutConfig = {
@@ -93,6 +103,31 @@ export const DEFAULT_LAYOUT_CONFIG: ResumeLayoutConfig = {
   sectionSpacing: 20,
   entrySpacing: 12,
   highlightIndent: 16,
+  theme: 'professional',
+}
+
+/**
+ * Build layout config from a theme configuration
+ * @param themeConfig - The theme configuration to use
+ * @param baseConfig - Optional base config to override (defaults to DEFAULT_LAYOUT_CONFIG)
+ * @returns A new layout config with theme-based fonts and spacing
+ */
+export function buildThemeLayoutConfig(
+  themeConfig: ResumeThemeConfig,
+  baseConfig: ResumeLayoutConfig = DEFAULT_LAYOUT_CONFIG,
+): ResumeLayoutConfig {
+  return {
+    ...baseConfig,
+    theme: themeConfig.name,
+    themeConfig,
+    nameFont: `bold ${themeConfig.nameFontSize} ${themeConfig.nameFont}`,
+    sectionTitleFont: `bold ${themeConfig.sectionTitleFontSize} ${themeConfig.sectionTitleFont}`,
+    bodyFont: `${themeConfig.bodyFontWeight} ${themeConfig.bodyFontSize} ${themeConfig.bodyFont}`,
+    subsectionFont: `bold ${themeConfig.subsectionFontSize} ${themeConfig.subsectionFont}`,
+    sectionSpacing: themeConfig.sectionSpacing,
+    entrySpacing: themeConfig.entrySpacing,
+    highlightIndent: themeConfig.highlightIndent,
+  }
 }
 
 // ============================================================================
@@ -243,15 +278,23 @@ function buildEducationMeta(entry: EducationEntry): string {
  * 
  * @param data - The resume data object containing name, contact, education, and experience
  * @param config - Optional layout configuration (defaults to DEFAULT_LAYOUT_CONFIG)
+ *               Can include a theme name or theme config for styled rendering
  * @returns An array of positioned blocks with line information for rendering
  */
 export function renderResume(
   data: ResumeData,
   config: ResumeLayoutConfig = DEFAULT_LAYOUT_CONFIG,
 ): PositionedBlock[] {
-  const contentWidth = config.pageWidth - config.marginLeft - config.marginRight
+  // Apply theme configuration if specified
+  const effectiveConfig = config.themeConfig 
+    ? buildThemeLayoutConfig(config.themeConfig, config)
+    : config.theme 
+      ? buildThemeLayoutConfig(THEME_CONFIGS[config.theme], config)
+      : config;
+  
+  const contentWidth = effectiveConfig.pageWidth - effectiveConfig.marginLeft - effectiveConfig.marginRight
   const blocks: PositionedBlock[] = []
-  let currentY = config.marginTop
+  let currentY = effectiveConfig.marginTop
   
   // Helper to add a block
   function addBlock(element: LayoutElement, font: string): void {
@@ -280,10 +323,10 @@ export function renderResume(
     }
     
     const prepared = prepareText(text, font)
-    const linesResult = layoutWithLines(prepared, contentWidth, config.lineHeight)
+    const linesResult = layoutWithLines(prepared, contentWidth, effectiveConfig.lineHeight)
     
     blocks.push({
-      x: config.marginLeft,
+      x: effectiveConfig.marginLeft,
       y: currentY,
       width: contentWidth,
       lines: linesResult.lines,
@@ -297,8 +340,8 @@ export function renderResume(
   function addHighlights(highlights: string[]): void {
     for (const highlight of highlights) {
       const text = `• ${highlight}`
-      const prepared = prepareText(text, config.bodyFont)
-      const linesResult = layoutWithLines(prepared, contentWidth - config.highlightIndent, config.lineHeight)
+      const prepared = prepareText(text, effectiveConfig.bodyFont)
+      const linesResult = layoutWithLines(prepared, contentWidth - effectiveConfig.highlightIndent, effectiveConfig.lineHeight)
       
       // Indent highlights
       const indentedLines = linesResult.lines.map(line => ({
@@ -308,9 +351,9 @@ export function renderResume(
       }))
       
       blocks.push({
-        x: config.marginLeft + config.highlightIndent,
+        x: effectiveConfig.marginLeft + effectiveConfig.highlightIndent,
         y: currentY,
-        width: contentWidth - config.highlightIndent,
+        width: contentWidth - effectiveConfig.highlightIndent,
         lines: indentedLines,
         type: 'entry',
       })
@@ -320,7 +363,7 @@ export function renderResume(
   }
   
   // 1. Name
-  addBlock({ type: 'name', text: data.name }, config.nameFont)
+  addBlock({ type: 'name', text: data.name }, effectiveConfig.nameFont)
   currentY += 4 // Extra spacing after name
   
   // 2. Contact Info
@@ -335,25 +378,25 @@ export function renderResume(
   if (data.contact.github) secondaryContactItems.push(formatContactItem('github', data.contact.github))
   
   if (contactItems.length > 0) {
-    addBlock({ type: 'contact', items: contactItems }, config.bodyFont)
+    addBlock({ type: 'contact', items: contactItems }, effectiveConfig.bodyFont)
   }
   
   if (secondaryContactItems.length > 0) {
-    addBlock({ type: 'contact', items: secondaryContactItems }, config.bodyFont)
+    addBlock({ type: 'contact', items: secondaryContactItems }, effectiveConfig.bodyFont)
   }
   
-  currentY += config.sectionSpacing
+  currentY += effectiveConfig.sectionSpacing
   
   // 3. Summary (optional)
   if (data.summary) {
-    addBlock({ type: 'entry', heading: data.summary }, config.bodyFont)
-    currentY += config.sectionSpacing
+    addBlock({ type: 'entry', heading: data.summary }, effectiveConfig.bodyFont)
+    currentY += effectiveConfig.sectionSpacing
   }
   
   // 4. Experience
   if (data.experience && data.experience.length > 0) {
-    addBlock({ type: 'sectionTitle', text: 'Experience' }, config.sectionTitleFont)
-    currentY += config.entrySpacing
+    addBlock({ type: 'sectionTitle', text: 'Experience' }, effectiveConfig.sectionTitleFont)
+    currentY += effectiveConfig.entrySpacing
     
     for (const exp of data.experience) {
       const heading = exp.position
@@ -366,22 +409,22 @@ export function renderResume(
         headingText = `${heading} — ${subheading}`
       }
       
-      addBlock({ type: 'entry', heading: headingText, meta }, config.subsectionFont)
+      addBlock({ type: 'entry', heading: headingText, meta }, effectiveConfig.subsectionFont)
       
       if (exp.highlights && exp.highlights.length > 0) {
         addHighlights(exp.highlights)
       }
       
-      currentY += config.entrySpacing
+      currentY += effectiveConfig.entrySpacing
     }
     
-    currentY += config.sectionSpacing - config.entrySpacing
+    currentY += effectiveConfig.sectionSpacing - effectiveConfig.entrySpacing
   }
   
   // 5. Education
   if (data.education && data.education.length > 0) {
-    addBlock({ type: 'sectionTitle', text: 'Education' }, config.sectionTitleFont)
-    currentY += config.entrySpacing
+    addBlock({ type: 'sectionTitle', text: 'Education' }, effectiveConfig.sectionTitleFont)
+    currentY += effectiveConfig.entrySpacing
     
     for (const edu of data.education) {
       const heading = edu.degree
@@ -393,25 +436,25 @@ export function renderResume(
         headingText = `${heading} — ${subheading}`
       }
       
-      addBlock({ type: 'entry', heading: headingText, meta }, config.subsectionFont)
+      addBlock({ type: 'entry', heading: headingText, meta }, effectiveConfig.subsectionFont)
       
       if (edu.highlights && edu.highlights.length > 0) {
         addHighlights(edu.highlights)
       }
       
-      currentY += config.entrySpacing
+      currentY += effectiveConfig.entrySpacing
     }
     
-    currentY += config.sectionSpacing - config.entrySpacing
+    currentY += effectiveConfig.sectionSpacing - effectiveConfig.entrySpacing
   }
   
   // 6. Skills (optional)
   if (data.skills && data.skills.length > 0) {
-    addBlock({ type: 'sectionTitle', text: 'Skills' }, config.sectionTitleFont)
-    currentY += config.entrySpacing
+    addBlock({ type: 'sectionTitle', text: 'Skills' }, effectiveConfig.sectionTitleFont)
+    currentY += effectiveConfig.entrySpacing
     
     const skillsText = data.skills.join(' • ')
-    addBlock({ type: 'entry', heading: skillsText }, config.bodyFont)
+    addBlock({ type: 'entry', heading: skillsText }, effectiveConfig.bodyFont)
   }
   
   return blocks
